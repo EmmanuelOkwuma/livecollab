@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src https://main.vscode-cdn.net https://live-collab-production.up.railway.app wss://live-collab-production.up.railway.app;">
+	<title>LiveCollab</title>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		html, body { width: 100%; height: 100%; background: #181818; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; color: #CCCCCC; overflow: hidden; }
+		#page-landing { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #181818; }
+		.land-col { display: flex; flex-direction: column; align-items: flex-start; width: 360px; }
+		.land-logo { width: 64px; height: 64px; margin-bottom: 20px; }
+		.land-name { font-size: 30px; font-weight: 700; color: #CCCCCC; letter-spacing: -0.5px; margin-bottom: 4px; }
+		.land-tag { font-size: 16px; color: #9D9D9D; margin-bottom: 36px; }
+		.land-btn { width: 100%; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; border: 1px solid transparent; transition: background 120ms, box-shadow 120ms; margin-bottom: 8px; user-select: none; }
+		.land-signin { background: #2F5C8A; border-color: #356399; color: #fff; }
+		.land-signin:hover { background: #356BA0; box-shadow: 0 0 0 2px rgba(0,122,204,.35); }
+		.land-signup { background: #2A2D34; border-color: #3A3F47; color: #E4E4E4; }
+		.land-signup:hover { background: #32363E; border-color: #007ACC; box-shadow: 0 0 0 1px rgba(0,122,204,.2); }
+		.land-foot { position: fixed; bottom: 24px; left: 0; right: 0; text-align: center; font-size: 12px; color: #8A8A8A; }
+		.auth-page { position: fixed; inset: 0; background: #181818; display: none; }
+		.wm { position: absolute; top: 30px; left: 34px; display: flex; align-items: center; gap: 2px; }
+		.wm-name { font-size: 18px; font-weight: 700; letter-spacing: 1px; color: #E4E4E4; }
+		.mark-sm { width: 38px; height: 38px; }
+		.back-link { position: absolute; top: 34px; left: 34px; font-size: 13px; color: #9D9D9D; cursor: pointer; }
+		.back-link:hover { color: #CCCCCC; }
+		.auth-col { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+		.auth-form { width: 430px; display: flex; flex-direction: column; }
+		.auth-title { font-size: 28px; font-weight: 600; color: #F2F2F2; margin-bottom: 6px; }
+		.auth-sub { font-size: 18px; color: #5C5C5C; margin-bottom: 28px; }
+		.oauth-btn { width: 100%; padding: 13px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #1E1E1E; border: 1px solid #2B2B2B; border-radius: 8px; color: #E4E4E4; font-size: 13px; cursor: pointer; margin-bottom: 11px; position: relative; transition: background 120ms, border-color 120ms, box-shadow 120ms; user-select: none; }
+		.oauth-btn:hover { background: #232323; border-color: #007ACC; box-shadow: 0 0 0 1px rgba(0,122,204,.25); }
+		.coming-soon { opacity: 0.4; cursor: not-allowed; }
+		.coming-soon:hover { background: #1E1E1E !important; border-color: #2B2B2B !important; box-shadow: none !important; }
+		.last-used { position: absolute; top: -13px; right: 10px; background: #1E1E1E; border: 1px solid #3A3A3A; color: #9D9D9D; font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+		.divider { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; }
+		.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #2B2B2B; }
+		.divider span { font-size: 12px; color: #4A4A4A; }
+		.input-label { font-size: 13px; color: #7A7A7A; margin-bottom: 6px; }
+		.auth-input { width: 100%; padding: 11px 13px; background: #181818; border: 1px solid #2B2B2B; border-radius: 8px; color: #E4E4E4; font-size: 14px; outline: none; transition: border-color 120ms; margin-bottom: 14px; }
+		.auth-input::placeholder { color: #4A4A4A; }
+		.auth-input:focus { border-color: #007ACC; box-shadow: 0 0 0 3px rgba(0,122,204,.15); }
+		.checklist { display: none; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+		.chk-item { font-size: 11px; color: #6E6E6E; transition: color 120ms; }
+		.continue-btn { width: 100%; padding: 13px; background: #1E1E1E; border: 1px solid #2B2B2B; border-radius: 8px; color: #F2F2F2; font-size: 14px; font-weight: 500; cursor: pointer; text-align: center; transition: background 120ms, border-color 120ms, box-shadow 120ms; margin-bottom: 0; user-select: none; }
+		.continue-btn:hover { background: #232323; border-color: #007ACC; box-shadow: 0 0 0 1px rgba(0,122,204,.25); }
+		.auth-switch { text-align: center; font-size: 15px; color: #7A7A7A; margin-top: 18px; }
+		.auth-switch a { color: #B8B8B8; text-decoration: none; cursor: pointer; }
+		.auth-switch a:hover { text-decoration: underline; }
+		.auth-foot { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; font-size: 13px; color: #5C5C5C; }
+		.auth-foot a { color: #7A7A7A; text-decoration: underline; cursor: pointer; }
+		.auth-foot a:hover { color: #A8A8A8; }
+		.err-msg { color: #F14C4C; font-size: 12px; margin-bottom: 8px; display: none; }
+		.suc-msg { color: #2EA043; font-size: 14px; margin-bottom: 16px; }
+		.pwd-wrap { position: relative; margin-bottom: 0; }
+		.pwd-wrap .auth-input { padding-right: 40px; margin-bottom: 0; }
+		.pwd-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6E6E6E; user-select: none; }
+		.pwd-eye:hover { color: #9D9D9D; }
+		#si-stay-toggle { width: 36px; height: 20px; border-radius: 10px; background: #007ACC; cursor: pointer; position: relative; transition: background 200ms; flex-shrink: 0; }
+		#si-stay-toggle.off { background: #3A3A3A; }
+		#si-stay-knob { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left 200ms; }
+		#si-stay-toggle.off #si-stay-knob { left: 19px; }
+		.desc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 560px; margin-bottom: 28px; }
+		.desc-card { background: linear-gradient(160deg, #1C1C1C, #161616); border: 1px solid #2B2B2B; border-radius: 12px; padding: 24px 22px; display: flex; flex-direction: column; align-items: center; gap: 11px; cursor: pointer; position: relative; transition: background 150ms, border-color 150ms, transform 150ms, box-shadow 150ms; box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 1px 2px rgba(0,0,0,0.3); user-select: none; }
+		.desc-card:hover { background: linear-gradient(160deg, #222, #1A1A1A); border-color: #3A3A3A; transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05); }
+		.desc-card.selected { background: #10212E; border-color: #007ACC; box-shadow: 0 0 0 1px rgba(0,122,204,.4); }
+		.desc-check { position: absolute; top: 10px; right: 12px; color: #007ACC; font-size: 14px; opacity: 0; transform: scale(.6); transition: opacity .15s, transform .15s; }
+		.desc-card.selected .desc-check { opacity: 1; transform: scale(1); }
+		.desc-card-title { font-size: 15px; font-weight: 700; color: #4D9FFF; letter-spacing: -0.2px; }
+		.desc-card-desc { font-size: 11px; color: #6E6E6E; text-align: center; line-height: 1.5; }
+		.desc-controls { display: flex; gap: 12px; align-items: center; justify-content: center; }
+		.desc-skip { font-size: 14px; color: #9D9D9D; cursor: pointer; padding: 10px 24px; border-radius: 6px; border: 1px solid #2B2B2B; transition: color 120ms, background 120ms; }
+		.desc-skip:hover { color: #E4E4E4; background: #1E1E1E; }
+		.desc-continue { font-size: 14px; font-weight: 600; color: #fff; cursor: pointer; padding: 10px 32px; border-radius: 6px; background: #007ACC; border: none; transition: background 120ms; }
+		.desc-continue:hover { background: #1177BB; }
+		.desc-continue:disabled { background: #2A2D34; color: #6E6E6E; cursor: not-allowed; }
+
+		/* ===== DASHBOARD ===== */
+		#page-dashboard { position: fixed; inset: 0; display: none; }
+		#page-dashboard.show-flex { display: flex; }
+		.side { width:230px; background:#1A1A1A; border-right:1px solid #2B2B2B; display:flex; flex-direction:column; flex-shrink:0; padding:22px 16px; }
+		.side .top { display:flex; align-items:center; gap:6px; margin-bottom:30px; padding:0 8px; }
+		.side .top svg { width:28px; height:28px; }
+		.brand { font-weight:700; color:#E4E4E4; letter-spacing:-0.3px; font-size:16px; }
+		.navlabel { font-size:10px; font-weight:700; letter-spacing:1.4px; color:#5C5C5C; text-transform:uppercase; padding:0 10px 8px; }
+		.navs { display:flex; flex-direction:column; gap:3px; }
+		.action { display:flex; align-items:center; gap:11px; font-size:13.5px; cursor:pointer; padding:9px 10px; border-radius:7px; transition:background .12s, color .12s; user-select:none; position:relative; }
+		.action svg { width:16px; height:16px; flex-shrink:0; }
+		.action .count { margin-left:auto; font-size:11px; color:#6E6E6E; background:#232323; border-radius:10px; padding:1px 8px; }
+		.action.neutral { color:#CCCCCC; }
+		.action.neutral.active { background:#232323; color:#E4E4E4; }
+		.action.neutral.active::before { content:""; position:absolute; left:0; top:7px; bottom:7px; width:2.5px; border-radius:2px; background:#007ACC; }
+		.action.neutral:hover { background:#232323; }
+		.action.primary { color:#007ACC; } .action.primary:hover { background:rgba(0,122,204,.1); }
+		.action.primary.pulse { animation:nrpulse 2.2s ease-in-out infinite; }
+		@keyframes nrpulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,122,204,0);} 50%{box-shadow:0 0 0 3px rgba(0,122,204,.16);} }
+		.action.sec { color:#3F8FD0; } .action.sec:hover { background:rgba(63,143,208,.08); }
+		.dspacer { flex:1; }
+		.profile { border-top:1px solid #2B2B2B; padding-top:10px; margin-top:10px; }
+		.pbtn { display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; cursor:pointer; transition:background .12s; user-select:none; }
+		.pbtn:hover { background:#232323; }
+		.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#2E6BE6,#13255C); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
+		.pinfo { flex:1; min-width:0; }
+		.pname { font-size:13px; color:#E4E4E4; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+		.pplan { font-size:11px; color:#6E6E6E; }
+				/* ===== SETTINGS MODAL v3 ===== */
+		.st-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:opacity .2s, visibility .2s; z-index:100; }
+		.st-backdrop.open { opacity:1; visibility:visible; }
+		.st-modal { background:#26262A; border-radius:34px; width:540px; max-width:calc(100vw - 40px); overflow:hidden; position:relative; display:flex; flex-direction:column; height:640px; max-height:calc(100vh - 60px); transform:scale(.97); transition:transform .2s cubic-bezier(.2,.8,.3,1); }
+		.st-backdrop.open .st-modal { transform:scale(1); }
+		.st-pages { display:flex; transition:transform .32s cubic-bezier(.4,0,.2,1); flex:1; min-height:0; }
+		.st-page { width:100%; flex-shrink:0; overflow-y:auto; }
+		.st-page::-webkit-scrollbar { width:3px; } .st-page::-webkit-scrollbar-thumb { background:#3a3a3e; border-radius:2px; }
+		.st-mh { display:flex; align-items:center; padding:20px 18px 14px; position:sticky; top:0; z-index:2; flex-shrink:0; background:#26262A; }
+		.st-hb { width:36px; height:36px; border-radius:50%; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .12s; background:rgba(255,255,255,.06); }
+		.st-hb:hover { background:rgba(255,255,255,.1); } .st-hb svg { width:14px; height:14px; } .st-hb.confirm svg { width:18px; height:14px; stroke:#0A84FF; }
+		.st-mt { flex:1; text-align:center; font-size:18px; font-weight:600; color:#fff; letter-spacing:-.01em; }
+		.st-mb { padding:8px 20px 28px; display:flex; flex-direction:column; gap:24px; }
+		.st-idhead { display:flex; align-items:center; gap:13px; background:#19191C; border-radius:34px; padding:12px 18px; }
+		.st-idav { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.06); border:.5px solid rgba(255,255,255,.12); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:#E8E8E8; flex-shrink:0; }
+		.st-idn { font-size:18px; font-weight:600; color:#fff; }
+		.st-idemail { font-size:14px; color:#cfcfca; }
+		.st-slabel { font-size:14px; font-weight:700; color:#A6A6A0; padding-left:6px; margin-bottom:-16px; letter-spacing:.2px; }
+		.st-card { background:#19191C; border-radius:34px; overflow:hidden; }
+		.st-lrow { display:flex; align-items:center; padding:0 20px; min-height:58px; gap:15px; cursor:pointer; position:relative; transition:background .1s; }
+		.st-lrow:hover { background:rgba(255,255,255,.03); } .st-lrow:active { background:rgba(255,255,255,.05); }
+		.st-lrow + .st-lrow::before { content:''; position:absolute; top:0; left:52px; right:0; height:.5px; background:#2a2a2e; }
+		.st-li { width:24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+		.st-li svg { width:22px; height:22px; stroke:#B0B0AA; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+		.st-ll { font-size:17px; font-weight:500; color:#fff; flex:1; }
+		.st-lbadge { font-size:15px; color:#8e8e88; margin-right:6px; }
+		.st-colorchip { width:16px; height:16px; border-radius:50%; margin-right:8px; }
+		.st-lchev { color:#6a6a64; flex-shrink:0; display:flex; } .st-lchev svg { width:11px; height:18px; stroke:#6a6a64; fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+		.st-frow { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 20px; min-height:56px; position:relative; }
+		.st-frow + .st-frow::before { content:''; position:absolute; top:0; left:20px; right:0; height:.5px; background:#2a2a2e; }
+		.st-fl { font-size:16px; color:#A6A6A0; } .st-fv { font-size:16px; color:#fff; }
+		.st-helper { font-size:13.5px; color:#8e8e88; line-height:1.45; padding:0 6px; margin-top:-16px; } .st-helper a { color:#0A84FF; text-decoration:none; }
+		.st-instr { background:#19191C; border-radius:28px; padding:17px 20px; font-size:16px; color:#6a6a64; }
+		.st-drow { display:flex; align-items:center; padding:17px 20px; gap:13px; cursor:pointer; }
+		.st-drow svg { width:20px; height:20px; stroke:#E5694D; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+		.st-dl { font-size:17px; color:#E5694D; font-weight:500; }
+		.st-toggle { width:40px; height:24px; border-radius:999px; background:#3a3a3e; position:relative; cursor:pointer; transition:background .2s; flex-shrink:0; }
+		.st-toggle.on { background:#0A84FF; } .st-toggle .k { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:left .2s; } .st-toggle.on .k { left:19px; }
+		.st-usebar { height:7px; background:#2a2a2e; border-radius:4px; overflow:hidden; margin-top:10px; } .st-usefill { height:100%; background:#0A84FF; border-radius:4px; }
+		.st-swatches { display:flex; flex-wrap:wrap; gap:12px; padding:6px 2px; }
+		.st-sw { width:34px; height:34px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+		.st-sw.sel { border-color:#fff; }
+		.st-confirm-overlay { position:absolute; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:20; border-radius:34px; }
+		.st-confirm-overlay.show { display:flex; }
+		.st-confirm-card { background:#26262A; border:1px solid #34343A; border-radius:22px; padding:24px 22px 18px; width:300px; box-shadow:0 20px 50px rgba(0,0,0,.5); }
+		.st-confirm-title { font-size:17px; font-weight:600; color:#fff; text-align:center; }
+		.st-confirm-msg { font-size:13.5px; color:#9D9D9D; text-align:center; margin-top:8px; line-height:1.5; }
+		.st-confirm-btns { display:flex; gap:10px; margin-top:20px; }
+		.st-confirm-btns button { flex:1; padding:11px 0; border-radius:12px; border:none; font-size:14px; font-weight:600; cursor:pointer; }
+		.st-cancel { background:#2E2E33; color:#E8E8E8; }
+		.st-cancel:hover { background:#363640; }
+		.st-confirm-logout { background:#E5483D; color:#fff; }
+		.st-confirm-logout:hover { background:#cf3f35; }
+		.ddivider { width:4px; cursor:ew-resize; background:transparent; flex-shrink:0; transition:background .12s; }
+		.ddivider:hover { background:rgba(0,122,204,.3); }
+		.dmain { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+		.band { padding:34px 44px 20px; }
+		.greet { font-size:34px; font-weight:700; color:#E4E4E4; letter-spacing:-0.7px; line-height:1.18; max-width:520px; }
+		/* The name on its own line, with what follows it ("?") kept beside it; a long name (up to 64 characters) is cut short, not refused. */
+		.greet .nameline { display:flex; max-width:100%; white-space:nowrap; }
+		.greet .accent { color:#007ACC; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+		.greet .tail { flex-shrink:0; }
+		.greetsub { font-size:13.5px; color:#9D9D9D; margin-top:7px; }
+		.livesum { font-size:12px; color:#8A8A8A; margin-top:13px; display:flex; align-items:center; gap:9px; }
+		.chip { display:inline-flex; align-items:center; gap:6px; background:#1E1E1E; border:1px solid #2B2B2B; border-radius:20px; padding:4px 11px; }
+		.ldot { width:6px; height:6px; border-radius:50%; background:#2EA043; display:inline-block; animation:dlive 2s ease-in-out infinite; }
+		@keyframes dlive { 0%,100%{box-shadow:0 0 0 0 rgba(46,160,67,.5);} 50%{box-shadow:0 0 0 4px rgba(46,160,67,0);} }
+		.chip .num { color:#E4E4E4; font-weight:600; }
+		.bandrule { display:none; }
+		.roomszone { flex:1; overflow-y:auto; padding:8px 44px 40px; }
+		.rhead { display:flex; flex-direction:column; align-items:flex-start; gap:10px; margin:0 0 18px; }
+		.rtitle { font-size:11px; color:#3F8FD0; letter-spacing:1.2px; text-transform:uppercase; }
+		.dsearch { display:flex; align-items:center; gap:7px; background:#1E1E1E; border:1px solid #3A3A3A; border-radius:6px; padding:7px 11px; width:220px; transition:border-color .12s, box-shadow .12s; }
+		.dsearch:focus-within { border-color:#007ACC; box-shadow:0 0 0 3px rgba(0,122,204,.12); }
+		.dsearch svg { width:13px; height:13px; } .dsearch input { background:transparent; border:0; outline:0; color:#CCCCCC; font-size:12.5px; width:100%; } .dsearch input::placeholder { color:#6E6E6E; }
+		.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; align-content:start; position:relative; }
+		.card { background:#1E1E1E; border:1px solid #2B2B2B; border-radius:4px; padding:12px 14px; position:relative; transition:background .18s, transform .18s, box-shadow .18s; cursor:grab; }
+		.card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:#007ACC; border-radius:4px 0 0 4px; opacity:0; transition:opacity .25s; }
+		.card:hover { background:#232323; } .card:hover::before { opacity:1; }
+		.card.dragging { cursor:grabbing; opacity:.92; box-shadow:0 8px 24px rgba(0,0,0,.45); transform:scale(1.02); z-index:5; border-color:#007ACC; }
+		.card.settle { animation:dsettle .22s ease; }
+		body.dragging-active .card:hover { background:#1E1E1E; }
+		.card.dragging { opacity:.4; }
+		.card.landed { animation:lcLandedPulse .65s ease; }
+		@keyframes lcLandedPulse { 0%{ box-shadow:0 0 0 0 rgba(0,122,204,.7); border-color:#007ACC; } 100%{ box-shadow:0 0 0 9px rgba(0,122,204,0); border-color:#2B2B2B; } }
+		.card.drop-before::before, .card.drop-after::after { content:''; position:absolute; top:-9px; bottom:-9px; width:3px; border-radius:2px; background:#007ACC; box-shadow:0 0 8px rgba(0,122,204,.7); z-index:2; }
+		.card.drop-before::before { left:-9px; } .card.drop-after::after { right:-9px; }
+		.ghost { position:fixed; pointer-events:none; z-index:999; opacity:.92; transform:rotate(-1.5deg) scale(1.02); box-shadow:0 20px 50px rgba(0,0,0,.6); border-radius:4px; }
+		.lcpanel { max-height:0; overflow:hidden; transition:max-height .32s cubic-bezier(.3,.8,.25,1); }
+		.lcpanel.open { max-height:260px; }
+		.lcp-inner { padding:10px 4px 6px; display:flex; flex-direction:column; gap:9px; }
+		.lcp-input { width:100%; background:#121212; border:1px solid #2E2E30; border-radius:8px; padding:10px 12px; font-size:13px; color:#E8E8E8; outline:none; font-family:inherit; transition:border-color .14s; }
+		.lcp-input:focus { border-color:#0A84FF; } .lcp-input::placeholder { color:#5E5E5E; }
+		.lcp-btn { background:#1A1A1A; color:#0A84FF; border:1px solid #2E2E30; border-radius:8px; padding:9px; font-size:13px; font-weight:600; cursor:pointer; width:100%; transition:background .14s, border-color .14s; }
+		.lcp-btn:hover { background:#212121; border-color:#3A6E92; }
+		.lcp-hint { font-size:11px; color:#7A7A7C; line-height:1.4; padding:0 2px; }
+		.lcp-err { font-size:11px; color:#F14C4C; min-height:14px; padding:0 2px; }
+		.lcp-codeboxes { display:flex; gap:5px; justify-content:space-between; }
+		.lcp-cbx { width:100%; aspect-ratio:1; background:#121212; border:1px solid #2E2E30; border-radius:7px; text-align:center; font-size:16px; font-weight:600; color:#E8E8E8; outline:none; text-transform:uppercase; font-family:inherit; transition:border-color .12s, background .12s; }
+		.lcp-cbx:focus { border-color:#0A84FF; background:#16181C; } .lcp-cbx.filled { border-color:#3A6E92; }
+		.lc-ctxmenu { position:fixed; z-index:300; background:#1E1E22; border:1px solid #34343A; border-radius:9px; padding:5px; min-width:150px; box-shadow:0 12px 36px rgba(0,0,0,.5); }
+		.lc-ctxitem { display:flex; align-items:center; gap:9px; padding:8px 10px; border-radius:6px; font-size:13px; color:#E0E0E0; cursor:pointer; }
+		.lc-ctxitem:hover { background:#2A2A30; }
+		.lc-ctx-delete { color:#F14C4C; } .lc-ctx-delete:hover { background:rgba(241,76,76,.12); }
+		.lc-confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:350; }
+		.lc-confirm-card { background:#26262A; border:1px solid #34343A; border-radius:14px; padding:22px; width:330px; box-shadow:0 20px 60px rgba(0,0,0,.55); }
+		.lc-confirm-title { font-size:15px; font-weight:600; color:#fff; }
+		.lc-confirm-msg { font-size:13px; color:#9D9D9D; margin-top:8px; line-height:1.5; }
+		.lc-confirm-btns { display:flex; gap:10px; margin-top:18px; }
+		.lc-confirm-btns button { flex:1; padding:10px 0; border-radius:9px; border:none; font-size:13.5px; font-weight:600; cursor:pointer; }
+		.lc-confirm-cancel { background:#2E2E33; color:#E8E8E8; } .lc-confirm-cancel:hover { background:#363640; }
+		.lc-confirm-del { background:#E5483D; color:#fff; } .lc-confirm-del:hover { background:#cf3f35; }
+		.rtrash { color:#6E6E6E; cursor:pointer; display:none; align-items:center; margin-left:2px; flex-shrink:0; transition:color .14s; }
+		.rtrash:hover { color:#F14C4C; }
+		.card[data-role="owner"]:hover .rtrash { display:inline-flex; }
+		.lc-prompt-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:200; }
+		.lc-prompt-card { background:#26262A; border:1px solid #34343A; border-radius:14px; padding:22px; width:340px; box-shadow:0 20px 60px rgba(0,0,0,.55); }
+		.lc-prompt-title { font-size:15px; font-weight:600; color:#fff; margin-bottom:14px; }
+		.lc-prompt-input { width:100%; background:#19191C; border:1px solid #3A3A3F; border-radius:8px; padding:10px 12px; color:#E8E8E8; font-size:14px; outline:none; }
+		.lc-prompt-input:focus { border-color:#0A84FF; }
+		.lc-prompt-err { font-size:12px; color:#F14C4C; min-height:16px; margin-top:6px; }
+		.lc-prompt-btns { display:flex; gap:10px; margin-top:8px; }
+		.lc-prompt-btns button { flex:1; padding:10px 0; border-radius:8px; border:none; font-size:13.5px; font-weight:600; cursor:pointer; }
+		.lc-prompt-cancel { background:#2E2E33; color:#E8E8E8; } .lc-prompt-cancel:hover { background:#363640; }
+		.lc-prompt-go { background:#0A84FF; color:#fff; } .lc-prompt-go:hover { background:#0a76e0; }
+		.card { transition: background .18s, transform .22s cubic-bezier(.2,.7,.3,1), box-shadow .18s; }
+		.card.lc-landed { animation: lcLanded .42s ease; }
+		@keyframes lcLanded { 0%{ box-shadow:0 0 0 0 rgba(0,122,204,.0); } 30%{ box-shadow:0 0 0 2px rgba(0,122,204,.7); } 100%{ box-shadow:0 0 0 0 rgba(0,122,204,0); } }
+		@keyframes dsettle { 0%{transform:translateY(4px);} 100%{transform:translateY(0);} }
+		.ctop { display:flex; align-items:center; gap:8px; }
+		.grip { color:#3A3A3A; width:12px; height:12px; flex-shrink:0; cursor:grab; }
+		.ctop > .folder { color:#9D9D9D; display:flex; flex-shrink:0; }
+		.ctop > .folder svg { width:14px; height:14px; }
+		.rname { font-size:13px; color:#CCCCCC; font-weight:500; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+		.rname mark { background:rgba(0,122,204,.3); color:#CFE6FB; border-radius:2px; padding:0 1px; }
+		.tag { background:#1A1A1A; border:1px solid #3A3A3A; border-radius:4px; font-size:10px; color:#9D9D9D; padding:1px 7px; flex-shrink:0; }
+		.pin { margin-left:auto; color:#6E6E6E; cursor:pointer; width:13px; height:13px; flex-shrink:0; transition:color .12s; }
+		.pin:hover { color:#9D9D9D; } .pin.active { color:#007ACC; }
+		.cmeta { font-size:11px; color:#6E6E6E; margin-top:6px; margin-left:22px; }
+		.chist { font-size:10.5px; color:#555; margin-top:2px; margin-left:22px; }
+		.cbot { display:flex; align-items:center; justify-content:space-between; margin-top:10px; margin-left:22px; }
+		/* The chat's unread count, the live dot (someone is in the room now), and who belongs to it (members). */
+		.cstats { display:inline-flex; align-items:center; gap:6px; }
+		.members { background:#1A1A1A; border:1px solid #3A3A3A; border-radius:4px; font-size:10px; color:#9D9D9D; padding:1px 7px; display:inline-flex; align-items:center; gap:5px; }
+		.cstats .ldot { width:6px; height:6px; }
+		.unread { background:#007ACC; border-radius:8px; font-size:10px; font-weight:600; color:#FFFFFF; padding:1px 7px; }
+		.open { font-size:12px; font-weight:600; color:#007ACC; cursor:pointer; display:inline-flex; align-items:center; gap:3px; transition:gap .12s; }
+		.open:hover { gap:6px; }
+		.empty { max-width:440px; margin:24px auto; border:1.5px dashed #333; border-radius:14px; padding:46px 32px; text-align:center; }
+		.empty .ico { color:#3A3A3A; margin-bottom:16px; display:flex; justify-content:center; }
+		.empty .t { font-size:16px; font-weight:600; color:#CCCCCC; margin-bottom:8px; }
+		.empty .x { font-size:13px; color:#6E6E6E; line-height:1.6; margin-bottom:22px; }
+		.empty .cta { display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border-radius:9px; background:#007ACC; color:#fff; font-size:13px; font-weight:600; cursor:pointer; transition:background .12s, transform .12s; }
+		.empty .cta:hover { background:#1177BB; transform:translateY(-1px); }
+		.empty .join { display:block; margin-top:14px; font-size:12px; color:#3F8FD0; cursor:pointer; } .empty .join:hover { text-decoration:underline; }
+
+		#page-landing, #page-dashboard { opacity: 1; transition: opacity 220ms ease; }
+		.page-fading { opacity: 0 !important; }
+		/* Why a room ended for you (removed, deleted, left elsewhere): stays until dismissed. */
+		#lc-notice { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:50; max-width:min(560px, calc(100vw - 32px)); display:flex; align-items:flex-start; gap:12px; background:#1F2226; border:1px solid #3A3F45; border-left:3px solid #007ACC; border-radius:6px; padding:10px 12px; color:#E4E4E4; font-size:13px; line-height:1.45; box-shadow:0 6px 24px rgba(0,0,0,0.4); }
+		#lc-notice[hidden] { display:none; }
+		#lc-notice-text { flex:1; overflow-wrap:anywhere; }
+		#lc-notice-close { background:transparent; border:none; color:#9D9D9D; font-size:12px; cursor:pointer; padding:0 2px; }
+		#lc-notice-close:hover { color:#E4E4E4; }
+	</style>
+<script>
+	// LiveCollab diagnostics for this page: to the console (dev builds) and to
+	// main.log through the main process (release builds have no DevTools).
+	// Main checks, cuts and redacts each line (livecollabDashboardLog.ts).
+	// Log ids and outcomes only — never tokens, whole server replies or
+	// personal data.
+	function lcDashLog(level) {
+		var parts = [];
+		for (var i = 1; i < arguments.length; i++) {
+			var a = arguments[i];
+			if (typeof a === 'string') { parts.push(a); }
+			else if (a instanceof Error) { parts.push(a.name + ': ' + a.message); }
+			else if (a !== null && typeof a === 'object') { try { parts.push(JSON.stringify(a)); } catch (e) { parts.push(String(a)); } }
+			else { parts.push(String(a)); }
+		}
+		var line = parts.join(' ');
+		(level === 'warn' ? console.warn : level === 'error' ? console.error : console.log)(line);
+		try { if (window.vscode && window.vscode.ipcRenderer) { window.vscode.ipcRenderer.send('vscode:livecollab-dashboard-log', level, line); } } catch (e) { }
+	}
+	var PAGES = ['page-landing','page-dashboard'];
+	function show(id) {
+		var target = document.getElementById(id);
+		var disp = (id === 'page-landing' || id === 'page-dashboard') ? 'flex' : 'block';
+		PAGES.forEach(function(p) {
+			var el = document.getElementById(p);
+			if (!el) return;
+			if (p === id) {
+				el.style.display = disp;
+				el.classList.add('page-fading');
+				requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.remove('page-fading'); }); });
+			} else {
+				el.style.display = 'none';
+			}
+		});
+	}
+</script>
+</head>
+<body>
+<div id="lc-notice" role="status" aria-live="polite" hidden><span id="lc-notice-text"></span><button id="lc-notice-close" type="button">Dismiss</button></div>
+
+<!-- LANDING -->
+<div id="page-landing">
+	<div class="land-col">
+		<svg class="land-logo" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<defs>
+				<linearGradient id="bp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E6BE6"/><stop offset="1" stop-color="#13255C"/></linearGradient>
+				<linearGradient id="sp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4D9FFF"/><stop offset="1" stop-color="#1D5FD6"/></linearGradient>
+			</defs>
+			<g transform="translate(11,14) scale(0.92)">
+				<circle cx="34" cy="24" r="11" fill="url(#bp)"/><rect x="28.5" y="24" width="11" height="50" rx="5.5" fill="url(#bp)"/>
+				<circle cx="62" cy="38" r="8.5" fill="url(#sp)"/><rect x="57.75" y="38" width="8.5" height="36" rx="4.25" fill="url(#sp)"/>
+			</g>
+		</svg>
+		<div class="land-name">LiveCollab</div>
+		<div class="land-tag">Sign in to LiveCollab</div>
+		<div class="land-btn land-signin" id="go-signin" role="button" tabindex="0">Sign In</div>
+		<div class="land-wait" id="land-wait" role="status" aria-live="polite" style="display:none;margin-top:14px;text-align:center;font-size:13px;color:#9D9D9D;line-height:1.5;max-width:300px;">
+			<div id="land-wait-text">Finish signing in in your browser. You can create an account there too.</div>
+			<div class="land-btn land-signup" id="land-cancel" role="button" tabindex="0" style="margin-top:10px;">Cancel</div>
+		</div>
+		<div class="land-error" id="land-error" role="alert" style="display:none;margin-top:14px;text-align:center;font-size:13px;color:#F48771;line-height:1.5;max-width:300px;"></div>
+	</div>
+	<div class="land-foot">Sign in to use your rooms.</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard">
+	<svg width="0" height="0" style="position:absolute"><defs>
+		<g id="d-folder"><path d="M2 4a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" fill="none" stroke="#9D9D9D" stroke-width="1.3"/></g>
+		<g id="d-grid4"><rect x="2" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/></g>
+		<g id="d-folderplus"><path d="M2 4a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M9 7.5v4M7 9.5h4" stroke="currentColor" stroke-width="1.3"/></g>
+		<g id="d-link"><path d="M7 9a3 3 0 004.2 0l2-2a3 3 0 00-4.2-4.2l-1 1M9 7a3 3 0 00-4.2 0l-2 2a3 3 0 004.2 4.2l1-1" fill="none" stroke="currentColor" stroke-width="1.3"/></g>
+		<g id="d-search"><circle cx="6.5" cy="6.5" r="4.5" fill="none" stroke="#6E6E6E" stroke-width="1.3"/><path d="M10 10l3 3" stroke="#6E6E6E" stroke-width="1.3"/></g>
+		<g id="d-pin"><path d="M8 1.5l1.8 4 4.2.4-3.2 2.8 1 4.3L8 10.8 4.2 13l1-4.3L2 5.9l4.2-.4z" fill="none" stroke="currentColor" stroke-width="1.3"/></g>
+		<g id="d-grip"><circle cx="4" cy="3" r="1"/><circle cx="4" cy="8" r="1"/><circle cx="4" cy="13" r="1"/><circle cx="9" cy="3" r="1"/><circle cx="9" cy="8" r="1"/><circle cx="9" cy="13" r="1"/></g>
+		<g id="d-arrow"><path d="M3 8h9M8 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6"/></g>
+	</defs></svg>
+	<div class="side" id="d-side">
+		<div class="top"><svg viewBox="0 0 110 110" fill="none"><g transform="translate(11,14) scale(0.92)"><circle cx="34" cy="24" r="11" fill="#2563EB"/><rect x="28.5" y="24" width="11" height="50" rx="5.5" fill="#2563EB"/><circle cx="62" cy="38" r="8.5" fill="#60A5FA"/><rect x="57.75" y="38" width="8.5" height="36" rx="4.25" fill="#60A5FA"/></g></svg><span class="brand">LiveCollab</span></div>
+		<div class="navlabel">Workspace</div>
+		<div class="navs">
+			<div class="action neutral active"><svg viewBox="0 0 16 16"><use href="#d-grid4"/></svg>All Rooms<span class="count" id="d-nav-count">0</span></div>
+			<div class="action primary" id="d-nav-new"><svg viewBox="0 0 16 16"><use href="#d-folderplus"/></svg>New Room</div>
+			<div class="lcpanel" id="lcp-create"><div class="lcp-inner">
+				<input class="lcp-input" id="lcp-roomname" placeholder="Room name" autocomplete="off" maxlength="100">
+				<div class="lcp-err" id="lcp-create-err"></div>
+				<button class="lcp-btn" id="lcp-create-go">Create room</button>
+			</div></div>
+			<div class="action sec" id="d-nav-join"><svg viewBox="0 0 16 16"><use href="#d-link"/></svg>Join with Invite</div>
+			<div class="lcpanel" id="lcp-join"><div class="lcp-inner">
+							<div class="lcp-hint">Paste the invite code.</div>
+							<input class="lcp-input" id="lcp-joincode" placeholder="Invite code" autocomplete="off" spellcheck="false">
+				<div class="lcp-err" id="lcp-join-err"></div>
+				<button class="lcp-btn" id="lcp-join-go">Join room</button>
+			</div></div>
+		</div>
+		<div class="dspacer"></div>
+		<div class="profile"><div class="pbtn" id="d-pbtn"><div class="avatar" id="d-avatar"></div><div class="pinfo"><div class="pname" id="d-pname" dir="auto">Loading account…</div></div></div></div>
+	</div>
+		<!-- SETTINGS MODAL v3 -->
+	<div class="st-backdrop" id="st-backdrop">
+		<div class="st-modal">
+			<div class="st-confirm-overlay" id="st-confirm"><div class="st-confirm-card"><div class="st-confirm-title">Sign out?</div><div class="st-confirm-msg">You'll need to sign in again to get back in.</div><div class="st-confirm-btns"><button class="st-cancel" id="st-confirm-cancel">Cancel</button><button class="st-confirm-logout" id="st-confirm-yes">Sign out</button></div></div></div>
+			<div class="st-pages" id="st-pages">
+				<div class="st-page">
+					<div class="st-mh"><button class="st-hb" id="st-close"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg></button><div class="st-mt">Settings</div><button class="st-hb" style="opacity:0;pointer-events:none"></button></div>
+					<div class="st-mb">
+						<div class="st-idhead"><div class="st-idav" id="st-av"></div><div class="st-idemail" id="st-email"></div></div>
+						<div class="st-slabel">Account</div>
+						<div class="st-card">
+							<div class="st-lrow" onclick="stGo(1)"><span class="st-li"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg></span><span class="st-ll">Profile</span><span class="st-lchev"><svg viewBox="0 0 11 18" fill="none"><path d="M2 2l7 7-7 7"/></svg></span></div>
+							<div class="st-lrow" onclick="lcOpenAccount()" title="Opens in your browser"><span class="st-li"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><span class="st-ll">Password and Security</span><span class="st-lbadge">In browser</span><span class="st-lchev"><svg viewBox="0 0 11 18" fill="none"><path d="M2 2l7 7-7 7"/></svg></span></div>
+						</div>
+						<div class="st-card">
+							<div class="st-lrow" onclick="stGo(14)"><span class="st-li"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r=".6" fill="currentColor"/></svg></span><span class="st-ll">About LiveCollab</span><span class="st-lchev"><svg viewBox="0 0 11 18" fill="none"><path d="M2 2l7 7-7 7"/></svg></span></div>
+						</div>
+						<div class="st-card"><div class="st-drow" id="st-logout"><svg viewBox="0 0 24 24"><path d="M14 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><polyline points="9 16 13 12 9 8"/><line x1="13" y1="12" x2="3" y2="12"/></svg><span class="st-dl">Sign out</span></div></div>
+					</div>
+				</div>
+				<div class="st-page">
+					<div class="st-mh"><button class="st-hb" id="st-back"><svg viewBox="0 0 10 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1L1 9l8 8"/></svg></button><div class="st-mt" id="st-subtitle"></div><button class="st-hb confirm" id="st-done"><svg viewBox="0 0 18 14" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 7 7 13 17 1"/></svg></button></div>
+					<div class="st-mb" id="st-subbody"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="ddivider" id="d-divider"></div>
+	<div class="dmain">
+		<div class="band">
+			<div class="greet" id="d-greet"></div>
+			<div class="greetsub" id="d-greetsub">Winding down or just getting started?</div>
+			<div class="livesum">
+				<span class="chip"><span class="ldot"></span><span class="num" id="d-active-rooms">0</span> rooms active</span>
+			</div>
+		</div>
+		<div class="bandrule"></div>
+		<div class="roomszone">
+			<div class="rhead"><div class="rtitle">Recent Rooms</div>
+				<div class="dsearch"><svg viewBox="0 0 16 16"><use href="#d-search"/></svg><input id="d-search-input" placeholder="Search rooms&#x2026;"></div>
+			</div>
+			<div class="grid" id="d-grid"></div>
+			<div class="lc-confirm-overlay" id="lc-del-confirm" style="display:none;">
+				<div class="lc-confirm-card">
+					<div class="lc-confirm-title">Delete this room for everyone?</div>
+					<div class="lc-confirm-msg" id="lc-del-msg">The room closes for everyone in it. All members lose access, and anyone in it now is removed. You can't undo this. Files on your computer are not deleted.</div>
+					<div class="lc-confirm-btns">
+						<button class="lc-confirm-cancel" id="lc-del-cancel">Cancel</button>
+						<button class="lc-confirm-del" id="lc-del-yes">Delete Room</button>
+					</div>
+				</div>
+			</div>
+			<div class="empty" id="d-loading" style="display:none;">
+				<div class="t">Loading your rooms…</div>
+			</div>
+			<div class="empty" id="d-empty" style="display:none;">
+				<div class="ico"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg></div>
+				<div class="t">No rooms yet</div>
+				<div class="x">Create your first room, or join an existing one with an invite code.</div>
+				<div class="cta" id="d-empty-create"><svg width="15" height="15" viewBox="0 0 16 16" style="color:#fff"><use href="#d-folderplus"/></svg>Create your first room</div>
+				<span class="join" id="d-empty-join">or join with invite code</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	
+
+	// ===== Sign-in: on the website, in the browser (option F, WEBSITE_SIGNIN_DESIGN.md) =====
+	// Main opens the website, waits for it to send the browser back, and keeps the device
+	// credential; this page only starts, cancels and shows how it went. Sign-up is on the website.
+	var _signInBusy = false;
+	var _sessionChecked = false;
+	var SIGN_IN_FAILED = {
+		timeout: "Sign-in didn't finish in the browser. Choose Sign In to try again.",
+		refused: "The sign-in wasn't accepted. Choose Sign In to try again.",
+		unreachable: "LiveCollab couldn't reach its server to finish signing in. Check your connection, then choose Sign In to try again.",
+		listenFailed: "LiveCollab couldn't wait for the browser. Choose Sign In to try again.",
+		noAccount: "You signed in, but LiveCollab couldn't load your account. Choose Sign In to try again."
+	};
+	var SIGNED_OUT_BECAUSE = {
+		session_ended: "Your sign-in has ended: it lasts 7 days, or you signed out in the browser. Sign in again to continue.",
+		unknown_credential: "You were signed out on another device or in the browser. Sign in again to continue.",
+		signed_out: "You're signed out. Sign in again to continue."
+	};
+	function lcLandingState(state, message) {
+		var wait = document.getElementById('land-wait');
+		var err = document.getElementById('land-error');
+		var btn = document.getElementById('go-signin');
+		if (wait) wait.style.display = state === 'waiting' ? 'block' : 'none';
+		if (btn) btn.style.display = state === 'waiting' ? 'none' : '';
+		if (err) { err.textContent = message || ''; err.style.display = message ? 'block' : 'none'; }
+	}
+	function lcApplyDisplayName(u) {
+		window._dashDisplayName = (u && (u.displayName || u.fullName)) || '';
+	}
+	function lcApplySession(u) {
+		window._dashFullName = u.fullName || '';
+		lcApplyDisplayName(u);
+		window._dashEmail = u.email || '';
+		window._dashProvider = u.provider || '';
+		window._dashUserId = u.userId || '';
+		window._dashSessionId = u.sessionId || '';
+		try { window.dispatchEvent(new CustomEvent('livecollab:identity-ready')); } catch(e) {}
+	}
+	function lcSignIn() {
+		if (_signInBusy || !window.vscode || !window.vscode.ipcRenderer) return;
+		_signInBusy = true;
+		lcLandingState('waiting');
+		var ipc = window.vscode.ipcRenderer;
+		ipc.invoke('vscode:livecollab-start-auth').then(function(outcome) {
+			if (!outcome || !outcome.ok) {
+				_signInBusy = false;
+				var reason = outcome && outcome.reason;
+				lcDashLog('info', '[LiveCollab] sign-in ended:', reason || 'no outcome');
+				lcLandingState('idle', reason === 'cancelled' ? '' : (SIGN_IN_FAILED[reason] || SIGN_IN_FAILED.refused));
+				return;
+			}
+			return ipc.invoke('vscode:livecollab-check-session').then(function(u) {
+				_signInBusy = false;
+				if (!u || !u.userId) { lcLandingState('idle', SIGN_IN_FAILED.noAccount); return; }
+				lcApplySession(u);
+				_sessionChecked = true;
+				lcLandingState('idle');
+				show('page-dashboard');
+				initDashboard();
+			});
+		}).catch(function(e) {
+			_signInBusy = false;
+			lcDashLog('info', '[LiveCollab] sign-in failed:', e && (e.message || e));
+			lcLandingState('idle', SIGN_IN_FAILED.refused);
+		});
+	}
+	// Signed out by something other than Sign Out here: the page says why (never a silent drop).
+	window.lcSignedOutBecause = function(reason) {
+		if (!window._dashUserId) return;
+		lcDashLog('info', '[LiveCollab] signed out:', reason);
+		try { if (window.lcRooms && window.lcRooms.signOut) { window.lcRooms.signOut(); } } catch(e){}
+		window._dashFullName=''; window._dashEmail=''; window._dashProvider=''; window._dashUserId=''; window._dashSessionId=''; window._dashDisplayName='';
+		show('page-landing');
+		lcLandingState('idle', SIGNED_OUT_BECAUSE[reason] || SIGNED_OUT_BECAUSE.signed_out);
+	};
+	function lcOnKeyActivate(el, fn) {
+		if (!el) return;
+		el.onclick = fn;
+		el.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } };
+	}
+	lcOnKeyActivate(document.getElementById('go-signin'), lcSignIn);
+	lcOnKeyActivate(document.getElementById('land-cancel'), function() {
+		if (window.vscode && window.vscode.ipcRenderer) window.vscode.ipcRenderer.invoke('vscode:livecollab-cancel-auth');
+	});
+	// Profiles are Clerk's (its Account Portal), linked, not built. Back in the app, the name is read
+	// again and the dashboard redrawn; the workbench tells the room (room:member:refresh).
+	window.lcOpenAccount = function() {
+		if (!window.vscode || !window.vscode.ipcRenderer) return;
+		window.vscode.ipcRenderer.invoke('vscode:livecollab-open-account');
+		var back = function() {
+			window.removeEventListener('focus', back);
+			window.vscode.ipcRenderer.invoke('vscode:livecollab-check-session').then(function(u) {
+				if (u && u.userId) { lcApplySession(u); initDashboard(); }
+			}).catch(function(){});
+		};
+		window.addEventListener('focus', back);
+	};
+	// If loaded with #dashboard hash (e.g. from Back to Dashboard), skip straight to dashboard
+	if (window.location.hash === '#dashboard') {
+		window.location.hash = '';
+		show('page-dashboard');
+		setTimeout(function(){ if (typeof initDashboard === 'function') initDashboard(); }, 0);
+	}
+
+	// ===== SETTINGS MODAL v3 =====
+	(function(){
+		var pages = document.getElementById('st-pages');
+		var subtitle = document.getElementById('st-subtitle');
+		var subbody = document.getElementById('st-subbody');
+		// The sub-page's tick button. It used to share id="st-confirm" with the
+		// Log-out confirmation overlay, so this found the overlay: hiding "the
+		// tick" on pages with no Save hid the logout confirmation (Log out then
+		// did nothing until a relaunch) and the real tick never got its click
+		// handler (2026-10-23).
+		var confirmbtn = document.getElementById('st-done');
+		var backdrop = document.getElementById('st-backdrop');
+		if (!pages) return;
+		var chev = '<span class="st-lchev"><svg viewBox="0 0 11 18" fill="none"><path d="M2 2l7 7-7 7"/></svg></span>';
+		function tog(on){ return '<span class="st-toggle '+(on?'on':'')+'" onclick="this.classList.toggle(\'on\')"><span class="k"></span></span>'; }
+		function sws(sel){ var c=['#2EA043','#0A84FF','#B57EDC','#E5694D','#CCA700','#3F8FD0','#E0529C','#16B8A6','#F0883E','#7C6CF0','#46B0E6','#C0CA33']; var out='<div class="st-swatches">'; for(var i=0;i<c.length;i++){ out+='<span class="st-sw '+(i==sel?'sel':'')+'" style="background:'+c[i]+'" onclick="var p=this.parentNode;var ss=p.querySelectorAll(\'.st-sw\');for(var k=0;k<ss.length;k++)ss[k].classList.remove(\'sel\');this.classList.add(\'sel\')"></span>'; } return out+'</div>'; }
+		var SUB = {
+			1:{t:'Profile',save:true,html:'<div class="st-card"><div class="st-frow" style="display:block"><label class="st-fl" for="st-dn-input">Display name</label><input id="st-dn-input" maxlength="64" autocomplete="name" spellcheck="false" style="display:block;width:100%;margin-top:8px;box-sizing:border-box;background:#1c1c1e;border:1px solid #3a3a3c;border-radius:8px;color:#fff;font-size:16px;padding:10px 12px;outline:none" data-fill="displayName"></div></div><div class="st-helper" id="st-dn-status" role="status" aria-live="polite">Everyone in your rooms sees this name. To change your password, email or sign-in methods, use Password and Security.</div>'},
+			2:{t:'Cursor color',save:true,html:'<div class="st-helper" style="margin-top:0">The color teammates see on your cursor and name in rooms.</div><div class="st-card" style="padding:18px 20px">'+sws(0)+'</div>'},
+			3:{t:'Sign-in method',html:'<div class="st-card"><div class="st-frow"><span class="st-fl">Signed in with</span><span class="st-fv" data-fill="provider"></span></div><div class="st-frow"><span class="st-fl">Email</span><span class="st-fv" data-fill="email"></span></div></div><div class="st-helper">Managed securely. You\'ll re-sign in every 7 days.</div>'},
+			4:{t:'Billing',html:'<div class="st-card"><div class="st-frow"><span class="st-fl">Current plan</span><span class="st-fv">Free</span></div></div><div class="st-card"><div class="st-lrow"><span class="st-ll">Upgrade to Pro</span>'+chev+'</div><div class="st-lrow"><span class="st-ll">Manage subscription</span>'+chev+'</div></div>'},
+			5:{t:'Usage',html:'<div class="st-card"><div class="st-frow" style="display:block"><span class="st-fl">This week</span><div style="color:#fff;font-size:16px;margin-top:4px">132 of 300 messages</div><div class="st-usebar"><div class="st-usefill" style="width:44%"></div></div></div></div>'},
+			6:{t:'Notifications',save:true,html:'<div class="st-card"><div class="st-frow"><span class="st-fv">Chat responses</span>'+tog(1)+'</div><div class="st-frow"><span class="st-fv">Code updates</span>'+tog(1)+'</div><div class="st-frow"><span class="st-fv">Direct messages</span>'+tog(1)+'</div><div class="st-frow"><span class="st-fv">Product updates</span>'+tog(0)+'</div></div>'},
+			7:{t:'Privacy',save:true,html:'<div class="st-card"><div class="st-frow"><span class="st-fv" style="max-width:320px">Help improve LiveCollab AI</span>'+tog(0)+'</div></div><div class="st-helper">Allow your chats and coding sessions to train our AI.</div>'},
+			8:{t:'Voice',save:true,html:'<div class="st-card"><div class="st-frow"><span class="st-fv">Enable voice in rooms</span>'+tog(1)+'</div></div>'},
+			9:{t:'Connectors',html:'<div class="st-card"><div class="st-frow"><span class="st-fl">GitHub</span><span class="st-fv">Connected</span></div><div class="st-frow"><span class="st-fl">GitLab</span><span class="st-fv">Connect</span></div></div>'},
+			10:{t:'Permissions',save:true,html:'<div class="st-card"><div class="st-frow"><span class="st-fv">Microphone</span>'+tog(1)+'</div><div class="st-frow"><span class="st-fv">Notifications</span>'+tog(1)+'</div><div class="st-frow"><span class="st-fv">File access</span>'+tog(0)+'</div></div>'},
+			11:{t:'Keyboard shortcuts',html:'<div class="st-card"><div class="st-frow"><span class="st-fl">Open command palette</span><span class="st-fv">Cmd K</span></div><div class="st-frow"><span class="st-fl">New room</span><span class="st-fv">Cmd N</span></div><div class="st-frow"><span class="st-fl">Toggle chat</span><span class="st-fv">Cmd /</span></div></div>'},
+			12:{t:'Help & FAQ',html:'<div class="st-card"><div class="st-lrow"><span class="st-ll">Getting started</span>'+chev+'</div><div class="st-lrow"><span class="st-ll">Troubleshooting</span>'+chev+'</div></div>'},
+			13:{t:'Send feedback',save:true,html:'<div class="st-instr">Tell us what\'s working or what\'s not...</div>'},
+			14:{t:'About LiveCollab',html:'<div class="st-card"><div class="st-frow"><span class="st-fl">Version</span><span class="st-fv" data-fill="version"></span></div><div class="st-frow"><span class="st-fl">Terms of Service</span>'+chev+'</div><div class="st-frow"><span class="st-fl">Privacy Policy</span>'+chev+'</div></div>'}
+		};
+		window.stGo = function(n){ window._stPage=n; var d=SUB[n]; subtitle.textContent=d.t; var dn=(window._dashDisplayName||window._dashFullName||''); subbody.innerHTML=d.html; /* the page's own markup; the account's values go in as text: */ if(window.lcDash) window.lcDash.fillSlots(subbody, { displayName: dn, email: window._dashEmail||'', provider: window._dashProvider||'' }); /* LiveCollab's version, from product.json through main, as text: */ if(n===14&&window.lcVersion){ window.lcVersion().then(function(v){ if(window._stPage===14&&window.lcDash) window.lcDash.fillSlots(subbody, { version: v||'' }); }); } confirmbtn.style.visibility=d.save?'visible':'hidden'; pages.style.transform='translateX(-100%)'; var dnIn=document.getElementById('st-dn-input'); if(n===1&&dnIn){ dnIn.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); lcSaveDisplayName(); } }; setTimeout(function(){ dnIn.focus(); dnIn.select(); }, 250); } };
+		function stBack(){ pages.style.transform='translateX(0)'; window._stPage=0; }
+		// The display name, set here (Manny, 2026-11-05): main sends it to our server, which saves it as
+		// LiveCollab's own name (2026-11-06: never Clerk's first and last name) and tells every room
+		// you're in. Password, email and the rest stay on Clerk's page. Every outcome is said in words.
+		var DN_FAILED = {
+			bad_name: "That name can't be used. Use 1 to 64 characters, without special control characters.",
+			unreachable: "LiveCollab couldn't reach its server, so the name wasn't changed. Check your connection and try again.",
+			clerk_failed: "The name wasn't saved: the account service refused it. Tell us if this keeps happening.",
+			signed_out: "You're signed out, so the name wasn't changed. Sign in again first."
+		};
+		function lcSaveDisplayName(){
+			var input=document.getElementById('st-dn-input'); var status=document.getElementById('st-dn-status');
+			if(!input||!window.vscode||!window.vscode.ipcRenderer) return;
+			var name=input.value.replace(/\s+/g,' ').trim();
+			if(!name){ status.textContent=DN_FAILED.bad_name; input.focus(); return; }
+			if(name===(window._dashDisplayName||window._dashFullName||'')){ status.textContent="That's already your name, so nothing changed."; return; }
+			status.textContent='Saving…'; input.disabled=true;
+			window.vscode.ipcRenderer.invoke('vscode:livecollab-set-display-name', name).then(function(res){
+				input.disabled=false;
+				if(res&&res.ok){
+					window._dashDisplayName=res.displayName; window._dashFullName=res.displayName;
+					var nmEl=document.getElementById('st-name'); if(nmEl) nmEl.textContent=res.displayName;
+					initDashboard(); stBack(); return;
+				}
+				var why=DN_FAILED[res&&res.reason]||DN_FAILED.clerk_failed;
+				if(res&&res.reason==='clerk_failed'&&typeof res.detail==='string'&&res.detail){ why=why.replace('refused it.','refused it ('+res.detail+').'); }
+				status.textContent=why;
+				lcDashLog('info','[LiveCollab] display name not changed:', (res&&res.reason)||'no answer', (res&&res.detail)||'');
+			}).catch(function(){ input.disabled=false; status.textContent=DN_FAILED.unreachable; });
+		}
+		var backBtn=document.getElementById('st-back'); if(backBtn) backBtn.onclick=stBack;
+		if(confirmbtn) confirmbtn.onclick=function(){ if(window._stPage===1){ lcSaveDisplayName(); } else { stBack(); } };
+		var pbtn=document.getElementById('d-pbtn');
+		if(pbtn) pbtn.onclick=function(e){ e.stopPropagation(); stBack(); var dn=(window._dashDisplayName||window._dashFullName||'Account'); var ini=dashInitials(window._dashDisplayName||window._dashFullName||''); var nmEl=document.getElementById('st-name'); if(nmEl) nmEl.textContent=dn; var avEl=document.getElementById('st-av'); if(avEl) avEl.textContent=ini; var emEl=document.getElementById('st-email'); if(emEl) emEl.textContent=(window._dashEmail||''); var pv=document.getElementById('st-provider'); if(pv && window._dashProvider) pv.textContent=window._dashProvider; var picon=document.getElementById('st-provider-icon'); if(picon){ var pr=(window._dashProvider||'').toLowerCase(); var G={google:'<svg viewBox=\'0 0 24 24\'><path fill=\'#4285F4\' d=\'M21.6 12.2c0-.6-.1-1.2-.2-1.8H12v3.4h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.1z\'/><path fill=\'#34A853\' d=\'M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z\'/><path fill=\'#FBBC05\' d=\'M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9z\'/><path fill=\'#EA4335\' d=\'M12 6.1c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6.1 12 6.1z\'/></svg>',github:'<svg viewBox=\'0 0 24 24\' fill=\'#E8E8E8\'><path d=\'M12 2C6.5 2 2 6.5 2 12c0 4.4 2.9 8.2 6.8 9.5.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-4.9 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.8-2.4 4.7-4.6 4.9.3.3.7 1 .7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 22 12c0-5.5-4.5-10-10-10z\'/></svg>',gitlab:'<svg viewBox=\'0 0 24 24\'><path fill=\'#E24329\' d=\'M12 21l3.4-10.5H8.6z\'/><path fill=\'#FC6D26\' d=\'M12 21L8.6 10.5H3.8z\'/><path fill=\'#FCA326\' d=\'M3.8 10.5L2.7 13.9c-.1.3 0 .6.3.8L12 21z\'/><path fill=\'#E24329\' d=\'M3.8 10.5h4.8L6.5 4.1c-.1-.3-.5-.3-.6 0z\'/><path fill=\'#FC6D26\' d=\'M12 21l3.4-10.5h4.8z\'/><path fill=\'#FCA326\' d=\'M20.2 10.5l1.1 3.4c.1.3 0 .6-.3.8L12 21z\'/><path fill=\'#E24329\' d=\'M20.2 10.5h-4.8l2.1-6.4c.1-.3.5-.3.6 0z\'/></svg>' }; var fb='<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#B0B0AA\' stroke-width=\'1.6\'><rect x=\'3\' y=\'11\' width=\'18\' height=\'11\' rx=\'2\'/><path d=\'M7 11V7a5 5 0 0 1 10 0v4\'/></svg>'; picon.innerHTML = G[pr] || fb; } backdrop.classList.add('open'); };
+		var cl=document.getElementById('st-close'); if(cl) cl.onclick=function(){ backdrop.classList.remove('open'); };
+		var lo=document.getElementById('st-logout');
+		var stConfirm=document.getElementById('st-confirm');
+		if(lo) lo.onclick=function(){ if(stConfirm) stConfirm.classList.add('show'); };
+		var stCancel=document.getElementById('st-confirm-cancel');
+		if(stCancel) stCancel.onclick=function(){ if(stConfirm) stConfirm.classList.remove('show'); };
+		var stYes=document.getElementById('st-confirm-yes');
+		if(stYes) stYes.onclick=function(){
+			try {
+				if (window.vscode && window.vscode.ipcRenderer) {
+					window.vscode.ipcRenderer.invoke('vscode:livecollab-logout')
+						.then(function(res){ lcDashLog('info', '[LiveCollab] logout:', res && res.ok); })
+						.catch(function(){});
+				}
+			} catch(e){}
+			try { if (window.lcRooms && window.lcRooms.signOut) { window.lcRooms.signOut(); } } catch(e){}
+			// Every page of every window holds its own socket: main tells them all
+			// once the credential is deleted (vscode:livecollab-signed-out).
+			window._dashFullName=''; window._dashEmail=''; window._dashProvider=''; window._dashUserId=''; window._dashSessionId=''; window._dashDisplayName='';
+			lcApplyDisplayName(null);
+			_sessionChecked=false;
+			lcLandingState('idle');
+			if(stConfirm) stConfirm.classList.remove('show');
+			if(backdrop) backdrop.classList.remove('open');
+			show('page-landing');
+		};
+		if(backdrop) backdrop.addEventListener('click', function(e){ if(e.target===backdrop) backdrop.classList.remove('open'); });
+		document.addEventListener('keydown', function(e){ if(e.key==='Escape' && backdrop) backdrop.classList.remove('open'); });
+	})();
+
+	// ===== DASHBOARD =====
+	var dashName = '';
+	var dashEmail = '';
+	var dashFullName = '';
+	// The shared rule (vs/base/common/initials.js, as the chat and the members panel),
+	// loaded by its own module script below; blank until it has loaded.
+	function dashInitials(name) {
+		return window.lcInitialsFromName ? window.lcInitialsFromName(name || '') : '';
+	}
+	function dashApplyInitials() {
+		var ini = dashInitials(dashFullName || dashName);
+		var av = document.getElementById('d-avatar'); if (av) av.textContent = ini;
+		var mav = document.getElementById('d-m-avatar'); if (mav) mav.textContent = ini;
+	}
+	window.dashApplyInitials = dashApplyInitials;
+	var dashPools = {
+		morning:[{g:'Good morning, {n}',s:'A fresh start \u2014 what are we building today?'},{g:'Morning, {n}',s:"The room's quiet. Perfect time to get ahead."},{g:'Rise and code',s:'Welcome back, {n}.'},{g:'Early start, {n}?',s:"Let's make it count."}],
+		afternoon:[{g:'Good afternoon, {n}',s:'Pick up where you left off.'},{g:'Back at it, {n}',s:'Your rooms are waiting.'},{g:'Afternoon, {n}',s:'What are we shipping today?'}],
+		evening:[{g:'Good evening, {n}',s:'Winding down or just getting started?'},{g:'Evening, {n}',s:'The team might still be around.'},{g:'Welcome back, {n}',s:"Let's close out the day strong."}],
+		night:[{g:'Hey, night owl',s:'Burning the midnight oil, {n}?'},{g:'Late night session, {n}?',s:"Don't forget to rest eventually."},{g:'Still up, {n}?',s:'The quiet hours are the productive ones.'},{g:'Good evening, {n}',s:"The room's all yours tonight."}],
+		anytime:[{g:'Welcome back, {n}',s:'Your rooms are right where you left them.'},{g:'What are we doing today, {n}?',s:'Jump into a room to get started.'},{g:"Let's get to it, {n}",s:'Pick a room and dive in.'}]
+	};
+	// A name shown alone goes without direction controls (nameDirection.ts, imported below);
+	// one in a sentence goes in isolated (livecollabDashboard.ts builds those sentences).
+	// Before those modules have loaded, the name as it is.
+	function lcShown(name) { return window.lcNames ? window.lcNames.nameForDisplay(name) : name; }
+	function dashSetGreeting() {
+		var h = new Date().getHours();
+		var b = h>=5&&h<12?'morning':h>=12&&h<17?'afternoon':h>=17&&h<21?'evening':'night';
+		var pool = (Math.random()<0.2)?dashPools.anytime:dashPools[b];
+		var p = pool[Math.floor(Math.random()*pool.length)];
+		var greetEl = document.getElementById('d-greet');
+		var subEl = document.getElementById('d-greetsub');
+		if (greetEl && window.lcDash) window.lcDash.renderGreeting(greetEl, p.g, dashName);
+		if (subEl) subEl.textContent = window.lcDash ? window.lcDash.greetingSubline(p.s, dashName) : p.s.replace('{n}', function () { return dashName; });
+	}
+	// Real room data — empty by default (new user). Sample data is throwaway test only.
+	var dashRooms = [];
+	function dashSvg(id, cls, extra) { return '<svg class="'+(cls||'')+'" viewBox="0 0 16 16" '+(extra||'')+'><use href="#'+id+'"/></svg>'; }
+	function dashUpdateStats() {
+		// active rooms = total non-deleted rooms (real data). The "collaborators online" count went
+		// (2026-11-12): it was always 0; a real one is scoped separately.
+		var realRooms = window._lcRooms || dashRooms;
+		var active = realRooms.filter(function(r){ return !r.deletedAt; }).length;
+		var ar = document.getElementById('d-active-rooms'); if (ar) ar.textContent = active;
+		var nc = document.getElementById('d-nav-count'); if (nc) nc.textContent = dashRooms.length;
+	}
+	function dashCurrentList() {
+		var s = document.getElementById('d-search');
+		var q = s ? s.value.toLowerCase() : '';
+		// use real rooms from backend (window._lcRooms), fall back to dashRooms if not loaded
+		var source = (window._lcRooms && window._lcRooms.length) ? window._lcRooms.map(lcToDashRoom) : dashRooms;
+		return source.filter(function(r){ return !q || (r.name||'').toLowerCase().indexOf(q) !== -1; });
+	}
+		function dashRender(list) {
+		var grid = document.getElementById('d-grid');
+		var empty = document.getElementById('d-empty');
+		var nav = document.getElementById('d-nav-new');
+		var loading = document.getElementById('d-loading');
+		if (!grid) return;
+		// Until the first room list arrives, say it is loading — "No rooms yet"
+		// before the server has answered was false for everyone who has rooms.
+		if (!list.length && !window._lcRoomsLoaded) {
+			grid.style.display = 'none';
+			if (empty) empty.style.display = 'none';
+			if (loading) loading.style.display = 'block';
+			return;
+		}
+		if (loading) loading.style.display = 'none';
+		if (!list.length) {
+			grid.style.display = 'none';
+			if (empty) empty.style.display = 'block';
+			if (nav) nav.classList.add('pulse');
+			dashUpdateStats();
+			return;
+		}
+		grid.style.display = 'grid';
+		if (empty) empty.style.display = 'none';
+		if (nav) nav.classList.remove('pulse');
+		if (!window.lcDash) { dashRender._pending = list; return; }
+		dashRender._pending = null;
+		var sorted = list.slice().sort(function(a,b){ return (b.pinned?1:0)-(a.pinned?1:0); });
+		grid.textContent = '';
+		// Built as text by livecollabDashboard.js: names and the rest never become markup.
+		sorted.forEach(function(r) {
+			grid.appendChild(window.lcDash.renderRoomCard(document, r));
+		});
+		dashWire();
+		dashUpdateStats();
+	}
+	function dashWire() {
+		// Wire Open → button and card click to open room
+		document.querySelectorAll('#d-grid .open').forEach(function(btn) {
+			btn.onclick = function(e) {
+				e.stopPropagation();
+				var card = btn.closest('.card');
+				var id = card && (card.dataset.id || card.getAttribute('data-id'));
+				if (id && typeof lcOpenRoom === 'function') lcOpenRoom(id);
+				else if (id && window.lcRooms) window.lcRooms.open(id);
+			};
+		});
+		document.querySelectorAll('#d-grid .card').forEach(function(card) {
+			if (card._openWired) return; card._openWired = true;
+			card.addEventListener('dblclick', function(e) {
+				if (e.target.closest('.pin') || e.target.closest('.rtrash') || e.target.closest('.open')) return;
+				var id = card.dataset.id || card.getAttribute('data-id');
+				if (id && typeof lcOpenRoom === 'function') lcOpenRoom(id);
+				else if (id && window.lcRooms) window.lcRooms.open(id);
+			});
+		});
+		document.querySelectorAll('#d-grid .pin').forEach(function(p) {
+			p.onclick = function(e) { e.stopPropagation();
+				// find in real rooms (window._lcRooms) and toggle pin locally
+				var rooms = window._lcRooms || [];
+				var r = rooms.find(function(x){ return x.id===p.dataset.id; });
+				if (!r) return;
+				r._pinned = !r._pinned;
+				p.classList.add('pinspring');
+				setTimeout(function(){ p.classList.remove('pinspring'); }, 400);
+				// persist to backend
+				if (window.lcRooms && window.lcRooms.pin) {
+					window.lcRooms.pin(r.id).then(function(res){
+						if (res && res.ok !== false) window.lcRooms.refresh();
+					}).catch(function(){});
+				}
+				// optimistic re-render immediately
+				var mapped = rooms.filter(function(x){ return !x.deletedAt; })
+					.sort(function(a,b){ return (b._pinned?1:0)-(a._pinned?1:0); })
+					.map(function(x){ var m=window.lcToDashRoom(x); m.pinned=!!x._pinned; return m; });
+				dashRender(mapped);
+			};
+		});
+		// ===== Trash icon delete (owner cards) =====
+		(function lcSetupTrash(){
+			var grid = document.getElementById('d-grid');
+			var confirmEl = document.getElementById('lc-del-confirm');
+			var delMsg = document.getElementById('lc-del-msg');
+			var delCancel = document.getElementById('lc-del-cancel');
+			var delYes = document.getElementById('lc-del-yes');
+			if (!grid || grid._lcTrash) return;
+			grid._lcTrash = true;
+			var targetRoomId = null;
+			grid.addEventListener('click', function(e){
+				var t = e.target.closest && e.target.closest('.rtrash');
+				if (!t) return;
+				e.stopPropagation(); e.preventDefault();
+				targetRoomId = t.getAttribute('data-id');
+				var card = t.closest('.card');
+				var nm = card ? (card.querySelector('.rname') && card.querySelector('.rname').textContent) : '';
+				if (delMsg) delMsg.textContent = (nm ? ('"'+nm+'" closes for everyone in it.') : 'The room closes for everyone in it.') + ' All members lose access, and anyone in it now is removed. You can\'t undo this. Files on your computer are not deleted.';
+				if (confirmEl) confirmEl.style.display='flex';
+			});
+			if (delCancel) delCancel.onclick = function(){ if(confirmEl) confirmEl.style.display='none'; targetRoomId=null; };
+			if (confirmEl) confirmEl.addEventListener('mousedown', function(e){ if(e.target===confirmEl){ confirmEl.style.display='none'; targetRoomId=null; } });
+			if (delYes) delYes.onclick = async function(){
+				if (!targetRoomId) { if(confirmEl) confirmEl.style.display='none'; return; }
+				var id=targetRoomId;
+				if(confirmEl) confirmEl.style.display='none';
+				// use window.lcRooms since lcConnect/lcDeleteRoom live in the module scope
+				if (window.lcRooms) {
+					await window.lcRooms.connect();
+					var ok = await window.lcRooms.del(id);
+					if (ok) { await window.lcRooms.refresh(); }
+				}
+				targetRoomId=null;
+			};
+		})();
+
+		// ===== Room search: live filter, name+tag match, highlight, count, clear, empty state =====
+		(function lcSetupSearch(){
+			var input = document.getElementById('d-search-input');
+			var grid = document.getElementById('d-grid');
+			var empty = document.getElementById('d-empty');
+			var countEl = document.getElementById('d-nav-count');
+			if (!input || input._lcSearch) return;
+			input._lcSearch = true;
+
+			// inject clear button after the search input
+			var clear = document.createElement('span');
+			clear.id = 'lc-search-clear';
+			clear.title = 'Clear';
+			clear.innerHTML = '&#x2715;';
+			clear.style.cssText = 'position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6E6E6E;font-size:12px;display:none;';
+			if (input.parentNode) { input.parentNode.style.position='relative'; input.parentNode.appendChild(clear); }
+			clear.onclick = function(){ input.value=''; lcDoSearch(''); input.focus(); };
+
+
+			function lcDoSearch(term){
+				var t = term.trim().toLowerCase();
+				var rooms = window._lcRooms || [];
+				var matched = rooms.filter(function(r){
+					if (r.deletedAt) return false;
+					var n = (r.name||'').toLowerCase();
+					var role = (r.accessRole||'').toLowerCase();
+					return !t || n.indexOf(t) !== -1 || role.indexOf(t) !== -1;
+				});
+				// re-render via dashRender with matched rooms mapped + highlighted
+				var mapped = matched.map(function(r){
+					var m = typeof lcToDashRoom === 'function' ? lcToDashRoom(r) : r;
+					if (t) m.highlight = term.trim();
+					return m;
+				});
+				if (typeof dashRender === 'function') dashRender(mapped);
+				// update count
+				if (countEl) countEl.textContent = t ? (matched.length+(matched.length===1?' result':' results')) : String(rooms.filter(function(r){return !r.deletedAt;}).length);
+				// clear button visibility
+				if (clear) clear.style.display = t ? 'inline' : 'none';
+				// empty state
+				if (empty) empty.style.display = matched.length===0 ? '' : 'none';
+				if (grid) grid.style.display = matched.length===0 ? 'none' : 'grid';
+			}
+
+			input.addEventListener('input', function(){ lcDoSearch(input.value); });
+		})();
+
+		// ===== Pointer-based drag-and-drop (smooth; ghost + single indicator + drop confirm) =====
+		var grid = document.getElementById('d-grid');
+		(function lcSetupPointerDrag(){
+			if (!grid || grid._lcPtrDrag) return;
+			grid._lcPtrDrag = true;
+			var dragging=false, dragCard=null, ghost=null, offX=0, offY=0, startX=0, startY=0, armed=false;
+
+			function clearIndicators(){ grid.querySelectorAll('.card').forEach(function(c){ c.classList.remove('drop-before','drop-after'); }); }
+
+			grid.addEventListener('mousedown', function(e){
+				var card = e.target.closest && e.target.closest('.card');
+				if (!card) return;
+				if (e.target.closest('.pin')) return;      // pin click not a drag
+				if (e.target.closest('.open')) return;     // open click not a drag
+				armed=true; dragCard=card;
+				startX=e.clientX; startY=e.clientY;
+				var b=card.getBoundingClientRect();
+				offX=e.clientX-b.left; offY=e.clientY-b.top;
+				e.preventDefault();
+			});
+
+			window.addEventListener('mousemove', function(e){
+				if (!armed) return;
+				if (!dragging){
+					if (Math.abs(e.clientX-startX)<5 && Math.abs(e.clientY-startY)<5) return;
+					dragging=true;
+					document.body.classList.add('dragging-active');
+					if (window.getSelection){ var sel=window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); }
+					ghost=dragCard.cloneNode(true);
+					ghost.classList.add('ghost'); ghost.classList.remove('dragging');
+					ghost.style.width = dragCard.getBoundingClientRect().width + 'px';
+					document.body.appendChild(ghost);
+					dragCard.classList.add('dragging');
+				}
+				ghost.style.left=(e.clientX-offX)+'px';
+				ghost.style.top=(e.clientY-offY)+'px';
+				var cards=[].slice.call(grid.querySelectorAll('.card')).filter(function(c){ return c!==dragCard; });
+				clearIndicators();
+				for (var i=0;i<cards.length;i++){
+					var c=cards[i], b=c.getBoundingClientRect();
+					if (e.clientX>=b.left && e.clientX<=b.right && e.clientY>=b.top && e.clientY<=b.bottom){
+						var before = e.clientX < b.left + b.width/2;
+						c.classList.add(before?'drop-before':'drop-after');
+						break;
+					}
+				}
+			});
+
+			window.addEventListener('mouseup', function(e){
+				if (!armed) return;
+				armed=false;
+				if (!dragging){ dragCard=null; return; }
+				dragging=false;
+				document.body.classList.remove('dragging-active');
+				if (ghost){ ghost.remove(); ghost=null; }
+				if (dragCard) dragCard.classList.remove('dragging');
+				var indicated=grid.querySelector('.drop-before, .drop-after');
+				if (indicated && dragCard && indicated!==dragCard){
+					var after=indicated.classList.contains('drop-after');
+					if (after){ if (indicated.nextElementSibling) grid.insertBefore(dragCard, indicated.nextElementSibling); else grid.appendChild(dragCard); }
+					else { grid.insertBefore(dragCard, indicated); }
+					// drop confirmation pulse
+					dragCard.classList.add('landed');
+					(function(card){ setTimeout(function(){ card.classList.remove('landed'); }, 650); })(dragCard);
+					// persist new order locally (visual order of room ids)
+					try {
+						window._lcRoomOrder = [].slice.call(grid.querySelectorAll('.card')).map(function(c){ return c.getAttribute('data-roomid') || (c.dataset && c.dataset.id); });
+					} catch(err){}
+				}
+				clearIndicators();
+				dragCard=null;
+			});
+		})();
+	}
+	function initDashboard() {
+		// Apply name/email from Clerk (set via window._dashName etc when available)
+		if (window._dashDisplayName) dashName = window._dashDisplayName;
+		if (window._dashFullName) dashFullName = window._dashFullName;
+		if (window._dashEmail) dashEmail = window._dashEmail;
+		dashApplyInitials();
+		var pn = document.getElementById('d-pname'); if (pn) pn.textContent = lcShown(dashFullName || dashName);
+		var mn = document.getElementById('d-m-name'); if (mn) mn.textContent = dashFullName || dashName;
+		var me = document.getElementById('d-m-email'); if (me) me.textContent = dashEmail;
+		dashSetGreeting();
+		dashRender(dashRooms);
+	}
+	// Dashboard event wiring (runs once at load)
+	(function() {
+		var searchEl = document.getElementById('d-search');
+		// search wired below by lcSetupSearch()
+		var divider = document.getElementById('d-divider');
+		var side = document.getElementById('d-side');
+		var dragging = false;
+		if (divider) {
+			divider.addEventListener('mousedown', function(){ dragging = true; document.body.style.userSelect = 'none'; });
+			document.addEventListener('mousemove', function(e){ if (!dragging) return; requestAnimationFrame(function(){ var maxW = window.innerWidth/2; side.style.width = Math.max(0, Math.min(maxW, e.clientX)) + 'px'; }); });
+			document.addEventListener('mouseup', function(){ dragging = false; document.body.style.userSelect = ''; });
+		}
+	})();
+
+
+	function loadWorkbench() {
+		if (window.vscode && window.vscode.ipcRenderer) window.vscode.ipcRenderer.send('vscode:livecollab-load-workbench');
+	}
+
+	window.addEventListener('DOMContentLoaded', function() {
+		requestAnimationFrame(function() { requestAnimationFrame(function() {
+			// Decide the first page BEFORE revealing the window (no landing flash)
+			var _sentReady = false;
+			function _signalReady(){ if (_sentReady) return; _sentReady = true; if (window.vscode && window.vscode.ipcRenderer) window.vscode.ipcRenderer.send('vscode:livecollab-ready'); }
+			(function(){
+				if (window.vscode && window.vscode.ipcRenderer && window.vscode.ipcRenderer.invoke) {
+					// Main answers at once when this device holds no credential.
+					// Safety: never keep the window hidden longer than 2.5s
+					var _fallback = setTimeout(_signalReady, 2500);
+					window.vscode.ipcRenderer.invoke('vscode:livecollab-check-session').then(function(u){
+						if (u && u.userId) {
+							lcApplySession(u);
+							show('page-dashboard');
+							if (typeof initDashboard === 'function') initDashboard();
+						}
+						_sessionChecked = true;
+						clearTimeout(_fallback);
+						_signalReady();
+					}).catch(function(){ _sessionChecked = true; clearTimeout(_fallback); _signalReady(); });
+				} else {
+					_sessionChecked = true;
+					_signalReady();
+				}
+			})();
+		}); });
+	});
+</script>
+
+	<script type="module">
+		// The avatar's initials by the shared rule (see initials.ts), and how values are put on
+		// the page: as text (livecollabDashboard.ts). Its own module, so a failure to load it
+		// leaves the dashboard's socket below running.
+		import { initialsFromName } from '../../../base/common/initials.js';
+		import { renderRoomCard, renderGreeting, fillSlots, greetingSubline, removedNotice, openingText } from './livecollabDashboard.js';
+		import { isolatedName, nameForDisplay } from '../../../base/common/nameDirection.js';
+		window.lcInitialsFromName = initialsFromName;
+		window.lcNames = { isolatedName, nameForDisplay };
+		window.lcDash = { renderRoomCard, renderGreeting, fillSlots, greetingSubline, removedNotice, openingText };
+		if (window.dashApplyInitials) { window.dashApplyInitials(); }
+		if (dashName) { dashSetGreeting(); }
+		if (dashRender._pending) { dashRender(dashRender._pending); }
+	</script>
+
+	<script type="module">
+		// ===== LiveCollab dashboard socket (Option 1: dashboard's own connection) =====
+		lcDashLog('info', '[LC-MODULE] before import');
+		import SentryDash from '../../../workbench/contrib/livecollab/browser/vendor/sentry.electron.renderer.esm.js';
+		// Everything Sentry sends is redacted first — any console line here
+		// becomes a breadcrumb (HANDOFF "credentials are written to logs").
+		// The only first-party module imported from HTML: see redactSecrets.ts.
+		import { redactSecrets, sentryBreadcrumb } from '../../../base/common/redactSecrets.js';
+		SentryDash.init({
+			dsn: 'https://c08142a98b008018e7b40a0699031f11@o4511821873348608.ingest.us.sentry.io/4511821905854464',
+			sampleRate: 1.0,
+			beforeBreadcrumb: (breadcrumb) => sentryBreadcrumb(breadcrumb),
+			beforeSend: (event) => redactSecrets(event),
+			beforeSendTransaction: (event) => redactSecrets(event),
+		});
+		lcDashLog('info', '[LiveCollab] Sentry initialized (dashboard renderer)');
+		import { io } from './socket.io.esm.min.js';
+		lcDashLog('info', '[LC-MODULE] after import, io =', typeof io);
+		const PRODUCTION_SERVER_URL = 'https://live-collab-production.up.railway.app';
+		// The server the main process signs in with: production, unless a dev build or a run
+		// from source names another (liveCollabEndpoints). Production when it can't be asked.
+		let lcServerUrl = null;
+		async function lcServer() {
+			if (!lcServerUrl) {
+				try {
+					const answer = await window.vscode.ipcRenderer.invoke('vscode:livecollab-server-url');
+					if (typeof answer === 'string' && answer) { lcServerUrl = answer; }
+				} catch (e) { /* asked again next time */ }
+			}
+			return lcServerUrl || PRODUCTION_SERVER_URL;
+		}
+		// LiveCollab's version (product.json, from main), reported in the handshake as the
+		// workbench's connection does: the server tells 0.3.5 from later by it.
+		let lcClientVersion;
+		async function lcVersion() {
+			if (lcClientVersion === undefined) {
+				try {
+					const answer = await window.vscode.ipcRenderer.invoke('vscode:livecollab-client-version');
+					lcClientVersion = typeof answer === 'string' && answer ? answer : null;
+				} catch (e) { /* asked again next time */ }
+			}
+			return lcClientVersion || undefined;
+		}
+		window.lcVersion = lcVersion;
+		let lcSocket = null;
+		let lcConnecting = false;
+		let lcTokenRefreshTimer = null;
+		let lcMintLastAttempt = 0;
+		let lcMintLastHadToken = false;
+		let lcMintLastJwt = '';
+		let lcMintConsecutiveFails = 0;
+		const LC_MINT_COOLDOWN_MS = 30000; // 30s between mint attempts
+
+		async function lcMintToken() {
+			try {
+				// Cooldown: don't spam the server if mint keeps failing.
+				// Socket.io reconnection calls auth on every retry, which
+				// without this guard fires mint dozens of times per minute.
+				const now = Date.now();
+				if (lcMintLastHadToken && now - lcMintLastAttempt < LC_MINT_COOLDOWN_MS) { lcDashLog('info', '[LiveCollab] mint blocked by cooldown'); return null; }
+				lcMintLastAttempt = now;
+				lcMintLastHadToken = true;
+				if (!window.vscode || !window.vscode.ipcRenderer) { return null; }
+				// Main mints from the device credential it holds (option F).
+				const result = await window.vscode.ipcRenderer.invoke('vscode:livecollab-mint-token');
+				if (!result || !result.jwt) {
+					const reason = (result && result.error) || 'unknown';
+					// The credential is gone (the session ended, or it was signed out elsewhere): say so.
+					if (reason === 'session_ended' || reason === 'unknown_credential' || reason === 'signed_out') {
+						if (lcTokenRefreshTimer) { clearInterval(lcTokenRefreshTimer); lcTokenRefreshTimer = null; }
+						lcMintLastHadToken = false;
+						if (window.lcSignedOutBecause) { window.lcSignedOutBecause(reason); }
+						return null;
+					}
+					lcMintConsecutiveFails++;
+					lcDashLog('info', '[LiveCollab] dashboard mint failed (' + lcMintConsecutiveFails + '):', reason);
+					if (lcMintConsecutiveFails >= 5) {
+						lcDashLog('warn', '[LiveCollab] mint failed 5+ times — stopping refresh timer. Sign out and back in to reset.');
+						if (lcTokenRefreshTimer) { clearInterval(lcTokenRefreshTimer); lcTokenRefreshTimer = null; }
+					}
+					return null;
+				}
+				lcMintConsecutiveFails = 0; // reset on success
+				lcMintLastJwt = result.jwt;
+				return result.jwt;
+			} catch(e) { return null; }
+		}
+
+		async function lcConnect() {
+			if (lcSocket && lcSocket.connected) return lcSocket;
+			if (lcConnecting) return null;
+			lcConnecting = true;
+			try {
+				const jwt = await lcMintToken();
+				if (!jwt) { lcConnecting = false; lcDashLog('warn', '[LiveCollab] no token to connect dashboard socket'); return null; }
+				const clientVersion = await lcVersion();
+				lcSocket = io(await lcServer(), {
+						// Real fix (2026-09-02, PHASE3_YJS_DESIGN.md section 27):
+						// the outer jwt var here was captured once, when lcConnect()
+						// first ran, and could go stale for hours in a long-running
+						// session. Falling back to it on any mint failure meant a
+						// genuinely ancient token could get sent, confirmed live via
+						// the server's own timing diagnostic showing a token over
+						// two hours past its 60-second lifetime. Always use the
+						// fresh mint result now - an honest empty token on failure
+						// is better than a silent, confusing stale one.
+						auth: function(cb){ lcMintToken().then(function(t){ cb({ token: t || lcMintLastJwt || '', clientVersion }); }).catch(function(){ cb({ token: lcMintLastJwt || '', clientVersion }); }); },
+						transports: ['websocket'],
+						reconnection: true
+					});
+				lcSocket.on('connect', () => {
+					lcConnecting = false;
+					lcDashLog('info', '[LiveCollab] dashboard socket connected');
+					lcRefreshRooms();
+					// PHASE3_YJS_DESIGN.md sections 11-13: same real, confirmed
+					// fix as the workbench socket - Clerk token has a confirmed
+					// 60-second lifetime, refresh at 45s so it never goes stale
+					// while connected. Cleared/restarted here so a reconnect
+					// never leaves two timers running.
+					if (lcTokenRefreshTimer) { clearInterval(lcTokenRefreshTimer); }
+					lcTokenRefreshTimer = setInterval(() => { lcMintToken(); }, 45000);
+				});
+				lcSocket.on('connect_error', (e) => { lcConnecting = false; lcDashLog('warn', '[LiveCollab] dashboard socket error:', e && e.message); });
+				// The server sends this whenever this user's rooms change — a Leave
+				// in the room, a kick, a deleted room, an accepted invite. Without it
+				// the list stayed stale until the next reconnect, and a left room's
+				// card still opened (2026-10-23).
+				lcSocket.on('rooms:updated', () => { lcRefreshRooms(); });
+				// Removed from a room while on the dashboard: told at once, and by whom.
+				lcSocket.on('room:removed', (p) => {
+					if (!p || typeof p.roomId !== 'string') return;
+					lcShowNotice(p.roomId, window.lcDash ? window.lcDash.removedNotice(p.by, p.roomName) : 'You were removed from a room.');
+				});
+				lcSocket.on('disconnect', () => {
+					lcDashLog('info', '[LiveCollab] dashboard socket disconnected');
+					if (lcTokenRefreshTimer) { clearInterval(lcTokenRefreshTimer); lcTokenRefreshTimer = null; }
+				});
+				return lcSocket;
+			} catch(e) { lcConnecting = false; return null; }
+		}
+
+		function lcEmit(event, payload) {
+			return new Promise((resolve) => {
+				if (!lcSocket || !lcSocket.connected) { resolve(null); return; }
+				let done = false;
+				lcSocket.emit(event, payload || {}, (res) => { if (!done) { done = true; resolve(res); } });
+				setTimeout(() => { if (!done) { done = true; resolve(null); } }, 8000);
+			});
+		}
+
+		async function lcListRooms() {
+			const res = await lcEmit('rooms:list', {});
+			return (res && res.rooms) ? res.rooms : [];
+		}
+		async function lcCreateRoom(name) {
+			const res = await lcEmit('room:create', { name: name || 'Untitled Room' });
+			return (res && res.roomId) ? res.roomId : (res && res.error === 'bad_name' ? { error: 'bad_name' } : null);
+		}
+		async function lcJoinByCode(code) {
+			const res = await lcEmit('room:invite:accept', { code: code });
+			return res || { ok: false };
+		}
+		async function lcDeleteRoom(roomId) {
+			const res = await lcEmit('room:delete', { roomId: roomId });
+			return res && res.ok;
+		}
+		async function lcPinRoom(roomId) {
+			const res = await lcEmit('room:pin:toggle', { roomId: roomId });
+			return res || { ok: false };
+		}
+
+		// Render recent rooms + count into the dashboard (only the live count for now; cards rendering wired next phase)
+		function lcEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+		function lcFmtDate(ts){ try { if(!ts) return ''; const d=new Date(ts); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); } catch(e){ return ''; } }
+		function lcRoomCardHTML(r){
+			const name = lcEsc(r.name || 'Untitled Room');
+			const role = lcEsc(r.accessRole || 'member');
+			const when = lcFmtDate(r.updatedAt || r.createdAt);
+			return '<div class="card" data-roomid="'+lcEsc(r.id)+'" data-name="'+name.toLowerCase()+'">'
+				+ '<div class="ctop">'
+				+   '<span class="grip"><svg viewBox="0 0 16 16" width="12" height="12"><use href="#d-grip"/></svg></span>'
+				+   '<span class="folder"><svg viewBox="0 0 16 16"><use href="#d-folder"/></svg></span>'
+				+   '<span class="rname">'+name+'</span>'
+				+   '<span class="tag">'+role+'</span>'
+				+ '</div>'
+				+ '<div class="cmeta">'+(when?('Updated '+when):'')+'</div>'
+				+ '</div>';
+		}
+		function lcRenderRooms(rooms){
+			const grid = document.getElementById('d-grid');
+			const empty = document.getElementById('d-empty');
+			if (!grid) return;
+			if (!rooms || rooms.length === 0) {
+				grid.innerHTML = '';
+				grid.style.display = 'none';
+				if (empty) empty.style.display = 'block';
+				return;
+			}
+			if (empty) empty.style.display = 'none';
+			grid.style.display = 'grid';
+			grid.innerHTML = rooms.map(lcRoomCardHTML).join('');
+			lcDashLog('info', '[LiveCollab] rendered cards:', grid.querySelectorAll('.card').length, '| display now:', getComputedStyle(grid).display);
+			// click to open
+			const cards = grid.querySelectorAll('.card');
+			cards.forEach(function(c){
+				c.onclick = function(){ const id = c.getAttribute('data-roomid'); if (id) lcOpenRoom(id); };
+			});
+		}
+		function lcApplySearch(){
+			var q = (document.getElementById('d-search') && document.getElementById('d-search').value || '').trim().toLowerCase();
+			var grid = document.getElementById('d-grid');
+			if (!grid) return;
+			grid.querySelectorAll('.card').forEach(function(c){
+				var nameEl = c.querySelector('.rname');
+				var n = nameEl ? nameEl.textContent.toLowerCase() : '';
+				c.style.display = (!q || n.indexOf(q) !== -1) ? '' : 'none';
+			});
+		}
+		function lcAgo(ts){ try { if(!ts) return 'recently'; const diff=Date.now()-ts; const day=86400000; if(diff<3600000) return 'just now'; if(diff<day) return Math.floor(diff/3600000)+'h ago'; const dys=Math.floor(diff/day); if(dys<30) return dys+'d ago'; return new Date(ts).toLocaleDateString(undefined,{month:'short',day:'numeric'}); } catch(e){ return 'recently'; } }
+		function lcRoleLabel(role){ if(role==='owner') return 'Owner'; if(role==='editor'||role==='viewer') return 'Shared'; return 'Shared'; }
+		function lcToDashRoom(r){
+			return {
+				id: r.id,
+				name: r.name || 'Untitled Room',
+				role: lcRoleLabel(r.accessRole),
+				accessRole: r.accessRole,
+				pinned: !!r.pinnedAt,
+				activity: 'Edited ' + lcAgo(r.updatedAt || r.createdAt),
+				history: 'Created ' + lcAgo(r.createdAt),
+				// The green dot: someone is in the room right now (the server's
+				// liveCount, from presence). It was hard-coded off until 2026-10-24.
+				live: (r.liveCount || 0) > 0,
+				// Who belongs to the room, online or not (CHAT_DESIGN.md, Dashboard room card).
+				members: (r.memberCount != null ? r.memberCount : 1) + (((r.memberCount!=null?r.memberCount:1)===1)?' member':' members'),
+				// The chat's unread count, from the server (chatUnreadCount), as the chat view shows.
+				unread: r.unread || 0,
+				unreadText: (r.unread > 99 ? '99+' : String(r.unread || 0)) + ' unread',
+				unreadTitle: (r.unread === 1 ? '1 unread message' : (r.unread || 0) + ' unread messages') + ' in the chat'
+			};
+		}
+		window.lcToDashRoom = lcToDashRoom;
+		window.lcAgo = lcAgo;
+		window.lcRoleLabel = lcRoleLabel;
+		async function lcRefreshRooms() {
+			try {
+				const rooms = await lcListRooms();
+				window._lcRoomsLoaded = true;
+				const active = rooms.filter(r => !r.deletedAt);
+				active.sort(function(a,b){ return (b.updatedAt||b.createdAt||0) - (a.updatedAt||a.createdAt||0); });
+				const countEl = document.getElementById('d-nav-count');
+				if (countEl) countEl.textContent = String(active.length);
+				window._lcRooms = active;
+				// Map into the locked dashRender card design and render with it
+				const mapped = active.map(lcToDashRoom);
+				if (typeof dashRooms !== 'undefined') { try { dashRooms.length = 0; mapped.forEach(function(m){ dashRooms.push(m); }); } catch(e){} }
+				if (typeof dashRender === 'function') { dashRender(mapped); }
+				else { lcRenderRooms(active); }
+				lcApplySearch();
+				lcDashLog('info', '[LiveCollab] rooms rendered via dashRender:', active.length);
+			} catch(e) { lcDashLog('warn', '[LiveCollab] refresh error', e); }
+		}
+
+		// While main waits for the room to be ready (up to 3 s), the dashboard
+		// stays in front — say that the room is opening rather than look idle.
+		function lcShowOpening(name) {
+			var el = document.getElementById('lc-opening');
+			if (!el) {
+				el = document.createElement('div');
+				el.id = 'lc-opening';
+				el.style.cssText = 'position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:rgba(24,24,24,.72);color:#CCCCCC;font-size:14px;';
+				document.body.appendChild(el);
+			}
+			el.textContent = window.lcDash ? window.lcDash.openingText(name) : 'Opening room…';
+			el.style.display = 'flex';
+			clearTimeout(lcShowOpening._t);
+			lcShowOpening._t = setTimeout(function(){ el.style.display = 'none'; }, 6000);
+		}
+		document.addEventListener('visibilitychange', function(){ if (document.hidden) { var el = document.getElementById('lc-opening'); if (el) { el.style.display = 'none'; } } });
+		function lcOpenRoom(roomId) {
+			window._dashRoomId = roomId;
+			var _lcRoomName = '';
+			try { var _r = (window._lcRooms||[]).find(function(x){return x.id===roomId;}); if(_r&&_r.name) _lcRoomName=_r.name; } catch(e){}
+			lcShowOpening(_lcRoomName);
+			try { if (window.vscode && window.vscode.ipcRenderer) window.vscode.ipcRenderer.send('vscode:livecollab-load-workbench', { roomId: roomId, roomName: _lcRoomName }); } catch(e) {}
+		}
+
+		// Expose for other handlers
+		// Sign-out: the socket is authenticated as the account that opened it, for
+		// as long as it stays connected — lcConnect() reuses a connected socket —
+		// so it must be torn down, or the next account signs in on the previous
+		// account's connection (2026-10-23: rooms, invites and names were the
+		// previous account's).
+		function lcSignOut() {
+			if (lcTokenRefreshTimer) { clearInterval(lcTokenRefreshTimer); lcTokenRefreshTimer = null; }
+			if (lcSocket) { try { lcSocket.disconnect(); } catch(e){} }
+			lcSocket = null;
+			lcConnecting = false;
+			lcMintLastJwt = '';
+			lcMintLastAttempt = 0;
+			lcMintLastHadToken = false;
+			lcMintConsecutiveFails = 0;
+			window._lcRooms = [];
+			window._lcRoomsLoaded = false;
+			if (typeof dashRooms !== 'undefined') { try { dashRooms.length = 0; } catch(e){} }
+			if (typeof dashRender === 'function') { try { dashRender([]); } catch(e){} }
+			const countEl = document.getElementById('d-nav-count');
+			if (countEl) countEl.textContent = '0';
+			lcDashLog('info', '[LiveCollab] signed out: dashboard socket closed');
+		}
+		window.lcRooms = { connect: lcConnect, list: lcListRooms, create: lcCreateRoom, joinByCode: lcJoinByCode, del: lcDeleteRoom, pin: lcPinRoom, refresh: lcRefreshRooms, open: lcOpenRoom, signOut: lcSignOut };
+		// Signed out in any window, or the session ended: main tells every page
+		// of every window, this one included. Its socket closes, and a page still
+		// showing the account says why and shows the signed-out page.
+		if (window.vscode && window.vscode.ipcRenderer) { window.vscode.ipcRenderer.on('vscode:livecollab-signed-out', function(_event, reason){
+			lcSignOut();
+			if (window.lcSignedOutBecause) { window.lcSignedOutBecause(typeof reason === 'string' ? reason : 'signed_out'); }
+		}); }
+
+		// Why a room ended for this person, shown as it happens. It comes from the room's window
+		// (through main) when they were in the room, or from this page's socket (room:removed) when
+		// they weren't; one notice per room, whichever arrives first. Text only, never markup.
+		var lcNoticedRooms = {};
+		function lcShowNotice(roomId, text) {
+			if (!text) return;
+			var at = Date.now();
+			if (roomId && lcNoticedRooms[roomId] && at - lcNoticedRooms[roomId] < 30000) return;
+			if (roomId) lcNoticedRooms[roomId] = at;
+			document.getElementById('lc-notice-text').textContent = text;
+			document.getElementById('lc-notice').hidden = false;
+			lcDashLog('info', '[LiveCollab] dashboard notice shown');
+		}
+		document.getElementById('lc-notice-close').onclick = function(){ document.getElementById('lc-notice').hidden = true; };
+		window.lcShowNotice = lcShowNotice;
+		if (window.vscode && window.vscode.ipcRenderer) { window.vscode.ipcRenderer.on('vscode:livecollab-notice', function(_e, n){ if (n && typeof n.notice === 'string') lcShowNotice(String(n.roomId || ''), n.notice); }); }
+
+		// ===== Button wiring =====
+				function lcTogglePanel(which){
+			var isCreate = which==='create';
+			var panel=document.getElementById('lcp-'+which);
+			var other=document.getElementById('lcp-'+(isCreate?'join':'create'));
+			if(!panel) return;
+			var open=panel.classList.contains('open');
+			if(other) other.classList.remove('open');
+			panel.classList.toggle('open', !open);
+			if(!open){
+				lcConnect();
+				// The page is never reloaded, so the last code (another account's,
+				// after a sign-out) would still be in the field: start empty.
+				if(!isCreate){ var jc=document.getElementById('lcp-joincode'); if(jc) jc.value=''; var je=document.getElementById('lcp-join-err'); if(je) je.textContent=''; }
+				setTimeout(function(){ var f=isCreate?document.getElementById('lcp-roomname'):document.getElementById('lcp-joincode'); if(f) f.focus(); }, 200);
+			}
+		}
+		function doCreateFlow(){ lcTogglePanel('create'); }
+		function doJoinFlow(){ lcTogglePanel('join'); }
+		async function lcSubmitCreate(){
+			var input=document.getElementById('lcp-roomname'); var err=document.getElementById('lcp-create-err');
+			var val=(input&&input.value||'').trim();
+			if(!val){ if(err) err.textContent='Enter a room name.'; return; }
+			await lcConnect();
+			var roomId=await lcCreateRoom(val);
+			if(roomId&&roomId.error==='bad_name'){ if(err) err.textContent='That name can\'t be used. Use 1 to 100 characters, without special control characters.'; return; }
+			if(roomId){ if(input) input.value=''; if(err) err.textContent=''; document.getElementById('lcp-create').classList.remove('open'); await lcRefreshRooms(); lcOpenRoom(roomId); }
+			else { if(err) err.textContent='Could not create room. Try again.'; }
+		}
+		function lcReadCode(){ var el=document.getElementById('lcp-joincode'); return (el&&el.value||'').trim(); }
+		async function lcSubmitJoin(){
+			var err=document.getElementById('lcp-join-err');
+			var code=lcReadCode();
+			if(code.length<1){ if(err) err.textContent='Enter an invite code.'; return; }
+			await lcConnect();
+			var res=await lcJoinByCode(code);
+			if(res&&res.ok&&res.roomId){ if(err) err.textContent=''; document.getElementById('lcp-join').classList.remove('open'); await lcRefreshRooms(); lcOpenRoom(res.roomId); }
+			else { if(err) err.textContent=(res&&res.error==='invalid_code')?'Invalid or expired code.':'Could not join. Check the code.'; }
+		}
+		(function(){
+			function wireP(){
+				var cgo=document.getElementById('lcp-create-go'); if(cgo&&!cgo._w){ cgo._w=1; cgo.onclick=lcSubmitCreate; }
+				var jgo=document.getElementById('lcp-join-go'); if(jgo&&!jgo._w){ jgo._w=1; jgo.onclick=lcSubmitJoin; }
+				var rn=document.getElementById('lcp-roomname'); if(rn&&!rn._w){ rn._w=1; rn.addEventListener('keydown',function(e){ if(e.key==='Enter') lcSubmitCreate(); if(e.key==='Escape') document.getElementById('lcp-create').classList.remove('open'); }); }
+						var jc=document.getElementById('lcp-joincode');
+						if(jc&&!jc._w){ jc._w=1;
+							jc.addEventListener('keydown',function(e){ if(e.key==='Enter') lcSubmitJoin(); if(e.key==='Escape') document.getElementById('lcp-join').classList.remove('open'); });
+						}
+			}
+			var t=setInterval(function(){ if(document.getElementById('lcp-create-go')){ wireP(); clearInterval(t); } },200);
+		})();
+		function lcWireButtons() {
+			const newBtn = document.getElementById('d-nav-new');
+			if (newBtn && !newBtn._lcWired) {
+				newBtn._lcWired = true;
+				newBtn.onclick = doCreateFlow;
+			}
+			const joinBtn = document.getElementById('d-nav-join');
+			if (joinBtn && !joinBtn._lcWired) {
+				joinBtn._lcWired = true;
+				joinBtn.onclick = doJoinFlow;
+			}
+			const emptyCreate = document.getElementById('d-empty-create');
+			if (emptyCreate && !emptyCreate._lcWired) {
+				emptyCreate._lcWired = true;
+				emptyCreate.onclick = doCreateFlow;
+			}
+			const emptyJoin = document.getElementById('d-empty-join');
+			if (emptyJoin && !emptyJoin._lcWired) {
+				emptyJoin._lcWired = true;
+				emptyJoin.onclick = doJoinFlow;
+			}
+// search wired by lcSetupSearch()
+		}
+
+				// Wire the dashboard the moment identity arrives, from any auth path.
+				// (Replaces a 200ms/20s poll that fresh sign-ins always lost: a browser
+				// round-trip takes longer than 20s, so the poll died before identity landed.)
+				function lcOnIdentityReady() {
+					if (!window._dashUserId) { return; }
+					lcWireButtons();
+					lcConnect();
+				}
+				window.addEventListener('livecollab:identity-ready', lcOnIdentityReady);
+				// Covers the reverse race: identity may have landed before we were listening.
+				lcOnIdentityReady();
+	</script>
+</body>
+</html>

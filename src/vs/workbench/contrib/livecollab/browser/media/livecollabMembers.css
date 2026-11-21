@@ -1,0 +1,105 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.livecollab-member {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 8px;
+	border-radius: 4px;
+	min-width: 0;
+}
+
+.livecollab-member:hover {
+	background: var(--vscode-list-hoverBackground);
+}
+
+.livecollab-member-avatar {
+	position: relative;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	border: 1px solid transparent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	font-weight: 600;
+	flex-shrink: 0;
+}
+
+/* Online: a dot on the avatar, pulsing slowly. */
+.livecollab-member-dot {
+	position: absolute;
+	right: -2px;
+	bottom: -2px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--vscode-testing-iconPassed);
+	border: 2px solid var(--vscode-sideBar-background);
+	animation: livecollab-member-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes livecollab-member-pulse {
+	0%, 100% { box-shadow: 0 0 0 0 rgba(115, 201, 145, 0.5); }
+	50% { box-shadow: 0 0 0 3px rgba(115, 201, 145, 0); }
+}
+
+/* Static for anyone who asks for less motion, in the OS or in the workbench. */
+@media (prefers-reduced-motion: reduce) {
+	.livecollab-member-dot {
+		animation: none;
+	}
+}
+
+.monaco-workbench.monaco-reduce-motion .livecollab-member-dot {
+	animation: none;
+}
+
+/* Offline: the avatar dimmed; the name in the description color, which keeps it readable. */
+.livecollab-member.offline .livecollab-member-avatar {
+	opacity: 0.5;
+}
+
+.livecollab-member.offline .livecollab-member-name {
+	color: var(--vscode-descriptionForeground);
+}
+
+.livecollab-member-info {
+	min-width: 0;
+	flex: 1;
+}
+
+.livecollab-member-line {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.livecollab-member-name {
+	font-size: 12px;
+	color: var(--vscode-foreground);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* "You": a chip in the role label's size and color. */
+.livecollab-member-chip {
+	flex-shrink: 0;
+	font-size: 10px;
+	line-height: 14px;
+	padding: 0 5px;
+	border-radius: 7px;
+	border: 1px solid var(--vscode-descriptionForeground);
+	color: var(--vscode-descriptionForeground);
+}
+
+.livecollab-member-role {
+	font-size: 11px;
+	color: var(--vscode-descriptionForeground);
+}
